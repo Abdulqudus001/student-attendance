@@ -71,6 +71,9 @@ module.exports = {
           success: colors.green.accent3
         }
       }
+    },
+    icons: {
+      iconfont: 'mdi'
     }
   },
   /*
@@ -80,7 +83,7 @@ module.exports = {
     /*
     ** You can extend webpack config here
     */
-    extend (config, ctx) {
+    extend(config, ctx) {
     }
   }
 }
