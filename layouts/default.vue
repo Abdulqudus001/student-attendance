@@ -97,12 +97,12 @@ export default {
       fixed: false,
       items: [
         {
-          icon: 'mdi-apps',
+          icon: 'mdi-book-open-page-variant',
           title: 'Courses',
           to: '/courses'
         },
         {
-          icon: 'mdi-users',
+          icon: 'mdi-account-supervisor',
           title: 'Students',
           to: '/students'
         }
