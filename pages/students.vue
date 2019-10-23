@@ -63,35 +63,44 @@
       <v-flex v-for="(student, index) in students" :key="index" sm3>
         <v-card class="student">
           <div class="student__img">
-            <img v-if="student.sex=='M'" src="/icons/man.svg" alt="">
-            <img v-else src="/icons/woman.svg" alt="">
+            <img v-if="student.sex=='M'" src="/icons/man.png" alt="">
+            <img v-else src="/icons/woman.png" alt="">
           </div>
-          <p class="name">
+          <p class="student__name">
             {{ student.name }}
           </p>
-          <v-layout wrap>
+          <v-layout wrap justify-center>
             <v-flex sm4>
               <v-btn>
-                <v-icon>mdi-pencil</v-icon>
+                <v-icon color="info">
+                  mdi-pencil
+                </v-icon>
               </v-btn>
             </v-flex>
-            <v-flex sm4>
+            <!-- <v-flex sm4>
               <v-btn>
                 <v-icon>mdi-magnify</v-icon>
               </v-btn>
-            </v-flex>
+            </v-flex> -->
             <v-flex sm4>
               <v-btn>
-                <v-icon>mdi-delete</v-icon>
+                <v-icon color="error">
+                  mdi-delete
+                </v-icon>
               </v-btn>
             </v-flex>
           </v-layout>
         </v-card>
       </v-flex>
     </v-layout>
-    <v-btn fab fixed right>
-      <v-icon>mdi-plus</v-icon>
-    </v-btn>
+    <v-tooltip top>
+      <template v-slot:activator="{ on }">
+        <v-btn fab fixed bottom right v-on="on">
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
+      </template>
+      <span>Add student</span>
+    </v-tooltip>
   </v-container>
 </template>
 
@@ -163,6 +172,11 @@ export default {
           width: 100%;
           border-radius: 50%;
         }
+      }
+      &__name {
+        margin: 7px 0;
+        font-weight: bold;
+        font-size: 18px;
       }
     }
   }

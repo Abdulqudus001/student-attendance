@@ -99,7 +99,7 @@ export default {
         {
           icon: 'mdi-book-open-page-variant',
           title: 'Courses',
-          to: '/courses'
+          to: '/'
         },
         {
           icon: 'mdi-account-supervisor',
