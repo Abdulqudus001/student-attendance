@@ -60,13 +60,15 @@
       </v-layout>
     </v-card>
     <v-layout wrap class="students">
-      <v-flex sm3 v-for="student in students" :key="student">
+      <v-flex v-for="(student, index) in students" :key="index" sm3>
         <v-card class="student">
           <div class="student__img">
-            <img src="/icons/man.svg" alt="" v-if="student.sex=='M'">
-            <img src="/icons/woman.svg" alt="" v-else>
+            <img v-if="student.sex=='M'" src="/icons/man.svg" alt="">
+            <img v-else src="/icons/woman.svg" alt="">
           </div>
-          <p class="name">{{ student.name }}</p>
+          <p class="name">
+            {{ student.name }}
+          </p>
           <v-layout wrap>
             <v-flex sm4>
               <v-btn>
@@ -87,7 +89,7 @@
         </v-card>
       </v-flex>
     </v-layout>
-    <v-btn fab fixed>
+    <v-btn fab fixed right>
       <v-icon>mdi-plus</v-icon>
     </v-btn>
   </v-container>
@@ -123,6 +125,18 @@ export default {
       },
       {
         name: 'Mensaah',
+        sex: 'M'
+      },
+      {
+        name: 'Deven',
+        sex: 'M'
+      },
+      {
+        name: 'Emjaay',
+        sex: 'F'
+      },
+      {
+        name: 'Gami',
         sex: 'M'
       }
     ]
