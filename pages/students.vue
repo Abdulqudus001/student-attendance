@@ -5,35 +5,13 @@
         <v-flex sm4>
           <v-layout wrap align-center justify-center>
             <v-flex sm8>
-              <v-text-field
-                v-model="studentId"
-                label="ID"
-                required
-              />
+              <v-text-field v-model="studentId" label="ID" required />
             </v-flex>
             <v-flex sm4>
               <v-btn color="blue-grey">
                 <v-icon left>
                   mdi-magnify
-                </v-icon> By ID
-              </v-btn>
-            </v-flex>
-          </v-layout>
-        </v-flex>
-        <v-flex sm4>
-          <v-layout wrap align-center justify-center>
-            <v-flex sm8>
-              <v-text-field
-                v-model="studentName"
-                label="Name"
-                required
-              />
-            </v-flex>
-            <v-flex sm4>
-              <v-btn color="info">
-                <v-icon left>
-                  mdi-magnify
-                </v-icon> By Name
+                </v-icon>By ID
               </v-btn>
             </v-flex>
           </v-layout>
@@ -41,18 +19,27 @@
         <v-flex sm4>
           <v-layout wrap align-center justify-center>
             <v-flex sm7>
-              <v-select
-                v-model="course"
-                :items="courses"
-                label="Courses"
-                required
-              />
+              <v-text-field v-model="studentName" label="Name" required />
+            </v-flex>
+            <v-flex sm5>
+              <v-btn color="info" @click="filterByName">
+                <v-icon left>
+                  mdi-magnify
+                </v-icon>By Name
+              </v-btn>
+            </v-flex>
+          </v-layout>
+        </v-flex>
+        <v-flex sm4>
+          <v-layout wrap align-center justify-center>
+            <v-flex sm7>
+              <v-select v-model="course" :items="courses" label="Courses" required />
             </v-flex>
             <v-flex sm5>
               <v-btn color="error">
                 <v-icon left>
                   mdi-magnify
-                </v-icon> By course
+                </v-icon>By course
               </v-btn>
             </v-flex>
           </v-layout>
@@ -60,11 +47,11 @@
       </v-layout>
     </v-card>
     <v-layout wrap class="students">
-      <v-flex v-for="(student, index) in students" :key="index" sm3>
+      <v-flex v-for="(student, index) in filteredList" :key="index" sm3>
         <v-card class="student">
           <div class="student__img">
-            <img v-if="student.sex=='M'" src="/icons/man.png" alt="">
-            <img v-else src="/icons/woman.png" alt="">
+            <img v-if="student.sex=='M'" src="/icons/man.png" alt>
+            <img v-else src="/icons/woman.png" alt>
           </div>
           <p class="student__name">
             {{ student.name }}
@@ -77,11 +64,6 @@
                 </v-icon>
               </v-btn>
             </v-flex>
-            <!-- <v-flex sm4>
-              <v-btn>
-                <v-icon>mdi-magnify</v-icon>
-              </v-btn>
-            </v-flex> -->
             <v-flex sm4>
               <v-btn>
                 <v-icon color="error">
@@ -114,70 +96,104 @@ export default {
     students: [
       {
         name: 'Abdul',
-        sex: 'M'
+        gender: 'M',
+        id: '2014/1/52228cp'
       },
       {
         name: 'Deven',
-        sex: 'M'
+        gender: 'M',
+        id: '2014/1/52228cp'
       },
       {
         name: 'Emjaay',
-        sex: 'F'
+        gender: 'F',
+        id: '2014/1/52228cp'
       },
       {
         name: 'Gami',
-        sex: 'M'
+        gender: 'M',
+        id: '2014/1/52228cp'
       },
       {
         name: 'Ismo',
-        sex: 'F'
+        gender: 'F',
+        id: '2014/1/52228cp'
       },
       {
         name: 'Mensaah',
-        sex: 'M'
+        gender: 'M',
+        id: '2014/1/52228cp'
       },
       {
         name: 'Deven',
-        sex: 'M'
+        gender: 'M',
+        id: '2014/1/52228cp'
       },
       {
         name: 'Emjaay',
-        sex: 'F'
+        gender: 'F',
+        id: '2014/1/52228cp'
       },
       {
         name: 'Gami',
-        sex: 'M'
+        gender: 'M',
+        id: '2014/1/52228cp'
       }
-    ]
-  })
+    ],
+    filterBy: null,
+    param: null
+  }),
+  computed: {
+    filteredList () {
+      let filteredStudents = this.students
+      if (this.param && this.filterBy) {
+        filteredStudents = this.students.filter((student) => {
+          if (this.param && this.filterBy === 'name') {
+            return student.name.toLowerCase() === this.param.toLowerCase()
+          } else if (this.param && this.filterBy === 'id') {
+            return student.id.toLowerCase() === this.param.toLowerCase()
+          }
+        })
+      } else {
+        filteredStudents = this.students
+      }
+      return filteredStudents
+    }
+  },
+  methods: {
+    filterByName () {
+      this.filterBy = 'name'
+      this.param = this.studentName
+    }
+  }
 }
 </script>
 
 <style lang="scss">
-  .search-options {
-    padding: 0 20px;
-  }
-  .students {
-    margin: 20px auto !important;
-    .student {
-      padding: 10px 0;
-      text-align: center;
-      &__img {
-        width: 60px;
-        height: 60px;
+.search-options {
+  padding: 0 20px;
+}
+.students {
+  margin: 20px auto !important;
+  .student {
+    padding: 10px 0;
+    text-align: center;
+    &__img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: transparent;
+      margin: 0 auto;
+      img {
+        width: 100%;
         border-radius: 50%;
-        background: transparent;
-        margin: 0 auto;
-        img {
-          width: 100%;
-          border-radius: 50%;
-        }
-      }
-      &__name {
-        margin: 7px 0;
-        font-weight: bold;
-        font-size: 18px;
       }
     }
+    &__name {
+      margin: 7px 0;
+      font-weight: bold;
+      font-size: 18px;
+    }
   }
+}
 </style>
