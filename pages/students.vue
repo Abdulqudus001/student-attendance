@@ -50,7 +50,7 @@
       <v-flex v-for="(student, index) in filteredList" :key="index" sm3>
         <v-card class="student">
           <div class="student__img">
-            <img v-if="student.sex=='M'" src="/icons/man.png" alt>
+            <img v-if="student.gender=='M'" src="/icons/man.png" alt>
             <img v-else src="/icons/woman.png" alt>
           </div>
           <p class="student__name">
@@ -101,7 +101,7 @@ export default {
       },
       {
         name: 'Deven',
-        gender: 'M',
+        gender: 'F',
         id: '2014/1/52228cp'
       },
       {
@@ -126,7 +126,7 @@ export default {
       },
       {
         name: 'Deven',
-        gender: 'M',
+        gender: 'F',
         id: '2014/1/52228cp'
       },
       {
@@ -164,6 +164,21 @@ export default {
     filterByName () {
       this.filterBy = 'name'
       this.param = this.studentName
+      this.fetchSomething()
+    },
+    async fetchSomething () {
+      console.log('sdfsdf')
+      // await this.$axios.post('/students/', {
+      //   gender: 'M',
+      //   full_name: 'Abdulqudus',
+      //   email: 'abdulqudus@gmail.com',
+      //   matric_no: '2014/1/52228CP'
+      // }).then((res) => {
+      //   console.log(res)
+      // })
+      const ip = await this.$axios.$get('/students')
+      this.$store.dispatch('updateStudents', ip)
+      console.log(this.$store.state.students)
     }
   }
 }

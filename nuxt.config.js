@@ -51,6 +51,10 @@ module.exports = {
   ** See https://axios.nuxtjs.org/options
   */
   axios: {
+    // proxy: true,
+    proxyHeaders: false,
+    credentials: false,
+    baseURL: 'http://localhost:8000'
   },
   /*
   ** vuetify module configuration
@@ -83,7 +87,7 @@ module.exports = {
     /*
     ** You can extend webpack config here
     */
-    extend (config, ctx) {
+    extend(config, ctx) {
     }
   }
 }
