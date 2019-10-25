@@ -1,15 +1,22 @@
 export const state = () => ({
-  students: []
+  students: [],
+  courses: []
 })
 
 export const mutations = {
-  updateStudent(state, payload) {
+  updateStudents (state, payload) {
     state.students = payload
+  },
+  updateCourses (state, payload) {
+    state.courses = payload
   }
 }
 
 export const actions = {
-  updateStudent({ commit }, payload) {
-    commit('updateStudent', payload)
+  updateStudent ({ commit }, payload) {
+    commit('updateStudents', payload)
+  },
+  updateCourses ({ commit }, payload) {
+    commit('updateCourses', payload)
   }
 }

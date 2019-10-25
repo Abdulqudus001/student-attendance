@@ -48,7 +48,7 @@
             <img src="/icons/course.png" alt="Book icon">
           </div>
           <p class="course__name">
-            {{ course.name }}
+            {{ course.department }}{{ course.code }}
           </p>
           <v-chip
             pill
@@ -59,20 +59,20 @@
               left
               color="blue-grey"
             >
-              {{ course.student }}
+              {{ course.registered_students.length }}
             </v-avatar>
             Registered Students
           </v-chip>
           <v-layout wrap justify-center>
             <v-flex sm4>
-              <v-btn>
+              <v-btn @click.stop="showEditDialog('edit', course)">
                 <v-icon color="info">
                   mdi-pencil
                 </v-icon>
               </v-btn>
             </v-flex>
             <v-flex sm4>
-              <v-btn>
+              <v-btn @click.stop="deleteCourse(course.id)">
                 <v-icon color="error">
                   mdi-delete
                 </v-icon>
@@ -84,55 +84,102 @@
     </v-layout>
     <v-tooltip top>
       <template v-slot:activator="{ on }">
-        <v-btn fab fixed bottom right v-on="on">
+        <v-btn
+          fab
+          fixed
+          bottom
+          right
+          v-on="on"
+          @click="showEditDialog('add')"
+        >
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </template>
       <span>Add course</span>
     </v-tooltip>
+    <course-modal
+      :show="showDialog"
+      :action="dialogAction"
+      :course="currentCourse"
+      @hideDialog="hideDialog"
+      @savedCourse="fetchCourses"
+    />
   </v-container>
 </template>
 
 <script>
+import CourseModal from '@/components/courseModal.vue'
 export default {
+  components: { CourseModal },
   data: () => ({
     courseName: '',
     department: '',
     departments: ['CPE', 'CME'],
     course: '',
+    prefixUrl: '/course',
     courses: [
       {
         name: 'CPE523',
         department: 'CPE',
-        student: 58,
+        registered_students: 58,
       },
       {
         name: 'CPE524',
         department: 'CPE',
-        student: 128,
+        registered_students: 128,
       },
       {
         name: 'CPE525',
         department: 'CPE',
-        student: 88,
+        registered_students: 88,
       },
       {
         name: 'CPE526',
         department: 'CPE',
-        student: 58,
+        registered_students: 58,
       },
       {
         name: 'CME522',
         department: 'CME',
-        student: 128,
+        registered_students: 128,
       },
       {
         name: 'CME525',
         department: 'CME',
-        student: 40,
+        registered_students: 40,
       },
-    ]
-  })
+    ],
+    showDialog: false,
+    dialogAction: 'edit',
+    currentCourse: {}
+  }),
+  mounted () {
+    if (this.$store.state.courses.length > 0) {
+      this.courses = this.$store.state.courses
+    } else {
+      this.fetchCourses()
+    }
+  },
+  methods: {
+    async fetchCourses () {
+      const courses = await this.$axios.$get(`${this.prefixUrl}/`)
+      this.$store.dispatch('updateCourses', courses)
+      this.courses = courses
+    },
+    hideDialog () {
+      this.showDialog = false
+    },
+    showEditDialog (action, course) {
+      this.dialogAction = action
+      this.showDialog = true
+      this.currentCourse = course
+    },
+    async deleteCourse (id) {
+      await this.$axios.delete(`${this.prefixUrl}/${id}/`).then((res) => {
+        this.fetchCourses()
+      })
+    },
+  }
 }
 </script>
 
