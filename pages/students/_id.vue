@@ -25,9 +25,82 @@
         </v-card>
       </v-flex>
       <v-flex xs12 sm7>
-        <v-card>Hey</v-card>
+        <v-card>
+          <v-card-title>
+            Registered Images
+          </v-card-title>
+          <v-card-text>
+            <v-btn fab absolute right bottom @click="showImageDialog = true">
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </v-card-text>
+        </v-card>
       </v-flex>
     </v-layout>
+    <v-dialog
+      v-model="showImageDialog"
+      persistent
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title class="headline">
+        </v-card-title>
+        <v-card-text>
+          <viewer :images="viewerImages">
+            <img class="viewer" v-for="src in viewerImages" :src="src" :key="src">
+          </viewer>
+          <v-file-input
+            :rules="rules"
+            v-model="images"
+            accept="image/*"
+            color="deep-purple accent-4"
+            counter
+            label="Image"
+            multiple
+            placeholder="Add image(s)"
+            prepend-icon="mdi-camera"
+            outlined
+            :show-size="1000"
+            @change="showImage"
+          >
+            <template v-slot:selection="{ index, text }">
+              <v-chip
+                v-if="index < 2"
+                color="deep-purple accent-4"
+                dark
+                label
+                small
+              >
+                {{ text }}
+              </v-chip>
+
+              <span
+                v-else-if="index === 2"
+                class="overline grey--text text--darken-3 mx-2"
+              >
+                +{{ images.length - 2 }} File(s)
+              </span>
+            </template>
+          </v-file-input>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="error"
+            @click="showImageDialog = false"
+          >
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="blue-grey"
+            @click="addImage"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -38,7 +111,10 @@ export default {
     student: {},
     studentCourses: [],
     url: `/students`,
-    allCourses: []
+    allCourses: [],
+    showImageDialog: false,
+    images: [],
+    viewerImages: []
   }),
   computed: {
     ...mapState(['courses'])
@@ -51,6 +127,7 @@ export default {
     } else {
       this.fetchCourses()
     }
+    this.fetchStudentImages()
   },
   methods: {
     async fetchStudent () {
@@ -67,6 +144,35 @@ export default {
       const courses = await this.$axios.$get('/course/')
       this.$store.dispatch('updateCourses', courses)
       this.allCourses = courses
+    },
+    async fetchStudentImages () {
+      const id = this.$route.params.id
+      const images = await this.$axios.$get(`${this.url}/${id}/images`)
+      this.showImage(images)
+    },
+    addImage () {
+      const id = this.$route.params.id
+      this.images.forEach((image) => {
+        this.$axios.post(`${this.url}/${id}/images/`, {
+          file: image,
+          owner: id
+        }).then((res) => {
+          this.fetchStudentImages()
+          this.showImageDialog = false
+        })
+      })
+    },
+    showImage (imageArray) {
+      console.log(imageArray)
+      const images = []
+      imageArray.forEach((image) => {
+        const reader = new FileReader()
+        reader.onload = function (e) {
+          images.push(e.target.result)
+        }
+        reader.readAsDataURL(image)
+      })
+      this.viewerImages = images
     }
   }
 }
@@ -92,5 +198,9 @@ export default {
       font-weight: bold;
       font-size: 18px;
     }
+  }
+  .viewer {
+    width: 150px;
+    margin: 10px;
   }
 </style>
