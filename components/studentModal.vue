@@ -12,18 +12,18 @@
         <v-card-text>
           <v-layout wrap>
             <v-flex xs12>
-              <v-text-field v-model="name" label="Name" />
+              <v-text-field v-model="name" label="Name" required />
             </v-flex>
             <v-flex xs12>
-              <v-text-field v-model="email" label="Email" />
+              <v-text-field v-model="email" label="Email" required />
             </v-flex>
             <v-flex xs12>
               <v-layout>
                 <v-flex xs8>
-                  <v-text-field v-model="matricNumber" label="Matric No" />
+                  <v-text-field v-model="matricNumber" label="Matric No" required />
                 </v-flex>
                 <v-flex xs4>
-                  <v-select v-model="sex" :items="gender" label="Sex" />
+                  <v-select v-model="sex" :items="gender" label="Sex" required />
                 </v-flex>
               </v-layout>
             </v-flex>
@@ -40,6 +40,7 @@
 
           <v-btn
             color="blue-grey"
+            :disabled="isFormValid"
             @click="submitAction"
           >
             Save
@@ -79,6 +80,13 @@ export default {
       if (this.action === 'edit') {
         return 'Edit students info'
       } return 'Add new student'
+    },
+    isFormValid () {
+      if (this.name && this.matricNumber && this.email && this.gender && this.sex) {
+        return false
+      } else {
+        return true
+      }
     }
   },
   watch: {
@@ -100,12 +108,14 @@ export default {
       if (this.action === 'add') {
         await this.$axios.post('/students/', {
           gender: this.sex,
-          full_name: this.name,
-          email: this.email,
-          matric_no: this.matricNumber
+          full_name: this.name.toLowerCase(),
+          email: this.email.toLowerCase(),
+          matric_no: this.matricNumber.toLowerCase()
         }).then((res) => {
           this.clearForm()
           this.$emit('savedStudent')
+        }).catch((err) => {
+          console.log(err)
         })
         this.$emit('hideDialog')
       } else {

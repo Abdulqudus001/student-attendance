@@ -29,13 +29,24 @@
       fixed
       app
     >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn
-        icon
-        @click.stop="miniVariant = !miniVariant"
-      >
-        <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
-      </v-btn>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-app-bar-nav-icon @click.stop="drawer = !drawer" v-on="on" />
+        </template>
+        <span>Hide Navigation</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn
+            icon
+            @click.stop="miniVariant = !miniVariant"
+            v-on="on"
+          >
+            <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
+          </v-btn>
+        </template>
+        <span>Shrink Navigation</span>
+      </v-tooltip>
       <!-- <v-btn
         icon
         @click.stop="clipped = !clipped"
@@ -50,12 +61,21 @@
       </v-btn> -->
       <v-toolbar-title v-text="title" />
       <v-spacer />
-      <v-btn
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon @click="$vuetify.theme.dark=!$vuetify.theme.dark" v-on="on">
+            <v-icon>mdi-lightbulb</v-icon>
+            <!-- <v-icon v-else>mdi-lightbulb-outline</v-icon> -->
+          </v-btn>
+        </template>
+        <span>Toggle Dark Mode</span>
+      </v-tooltip>
+      <!-- <v-btn
         icon
         @click.stop="rightDrawer = !rightDrawer"
       >
         <v-icon>mdi-menu</v-icon>
-      </v-btn>
+      </v-btn> -->
     </v-app-bar>
     <v-content>
       <v-container>
@@ -111,6 +131,11 @@ export default {
       right: true,
       rightDrawer: false,
       title: 'Fuskar'
+    }
+  },
+  computed: {
+    isDarkModeActive () {
+      return this.$vuetify.theme.dark
     }
   }
 }

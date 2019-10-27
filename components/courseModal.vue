@@ -152,7 +152,7 @@ export default {
     },
     async submitAction (students) {
       if (this.action === 'add') {
-        await this.$axios.post('/course/', {
+        await this.$axios.post('/courses/', {
           department: this.department,
           name: this.name,
           code: this.code,
@@ -164,7 +164,7 @@ export default {
         })
         this.$emit('hideDialog')
       } else {
-        await this.$axios.put(`/course/${this.course.id}/`, {
+        await this.$axios.put(`/courses/${this.course.id}/`, {
           department: this.department,
           name: this.name,
           code: this.code,

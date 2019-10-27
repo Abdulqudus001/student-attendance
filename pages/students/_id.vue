@@ -4,8 +4,9 @@
       <v-flex xs12 sm5>
         <v-card class="student">
           <div class="student__img">
-            <img v-if="student.gender=='M'" src="/icons/man.png" alt>
-            <img v-else src="/icons/woman.png" alt>
+            <img v-if="viewerImages[0]" :src="viewerImages[0].url" :alt="student.full_name">
+            <img v-else-if="student.id === 'M'" src="/icons/man.png" :alt="student.full_name">
+            <img v-else-if="student.id === 'F'" src="/icons/woman.png" :alt="student.full_name">
           </div>
           <p class="student__name">
             {{ student.full_name }}
@@ -30,6 +31,25 @@
             Registered Images
           </v-card-title>
           <v-card-text>
+            <viewer :images="viewerImages">
+              <v-layout wrap>
+                <v-flex v-for="src in viewerImages" :key="src.id">
+                  <v-card
+                    height="200px"
+                    class="viewer-card"
+                    gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                  >
+                    <img class="viewer" :src="src.url">
+                    <v-card-actions>
+                      <v-spacer />
+                      <v-btn icon @click="deleteImage(src.id)">
+                        <v-icon>mdi-close</v-icon>
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-flex>
+              </v-layout>
+            </viewer>
             <v-btn fab absolute right bottom @click="showImageDialog = true">
               <v-icon>mdi-plus</v-icon>
             </v-btn>
@@ -43,14 +63,12 @@
       max-width="500"
     >
       <v-card>
-        <v-card-title class="headline">
-        </v-card-title>
+        <v-card-title class="headline" />
         <v-card-text>
-          <viewer :images="viewerImages">
-            <img class="viewer" v-for="src in viewerImages" :src="src" :key="src">
+          <viewer :images="seletedImages">
+            <img v-for="src in seletedImages" :key="src" :src="src" class="viewer">
           </viewer>
           <v-file-input
-            :rules="rules"
             v-model="images"
             accept="image/*"
             color="deep-purple accent-4"
@@ -114,7 +132,9 @@ export default {
     allCourses: [],
     showImageDialog: false,
     images: [],
-    viewerImages: []
+    viewerImages: [],
+    seletedImages: [],
+    imagesToBeUploaded: []
   }),
   computed: {
     ...mapState(['courses'])
@@ -141,29 +161,38 @@ export default {
       this.studentCourses = courses
     },
     async fetchCourses () {
-      const courses = await this.$axios.$get('/course/')
+      const courses = await this.$axios.$get('/courses/')
       this.$store.dispatch('updateCourses', courses)
       this.allCourses = courses
     },
     async fetchStudentImages () {
       const id = this.$route.params.id
       const images = await this.$axios.$get(`${this.url}/${id}/images`)
-      this.showImage(images)
+      this.showStudentImages(images)
     },
     addImage () {
       const id = this.$route.params.id
-      this.images.forEach((image) => {
-        this.$axios.post(`${this.url}/${id}/images/`, {
-          file: image,
-          owner: id
-        }).then((res) => {
+      // Loop through added images
+      this.imagesToBeUploaded.forEach((image) => {
+        // Create new formData to handle image upload
+        const form = new FormData()
+        form.append('file', image, image.name)
+        form.append('owner', id)
+        this.$axios.post(`/images/`, form, { headers: {
+          'content-type': 'multipart/form-data'
+        } }).then((res) => {
+          // Fetch students list after update
           this.fetchStudentImages()
           this.showImageDialog = false
         })
       })
     },
+    deleteImage (id) {
+      this.$axios.delete(`/images/${id}`).then((res) => {
+        this.fetchStudentImages()
+      })
+    },
     showImage (imageArray) {
-      console.log(imageArray)
       const images = []
       imageArray.forEach((image) => {
         const reader = new FileReader()
@@ -172,7 +201,20 @@ export default {
         }
         reader.readAsDataURL(image)
       })
-      this.viewerImages = images
+      this.imagesToBeUploaded = imageArray
+      this.seletedImages = images
+    },
+    showStudentImages (imageArray) {
+      let images = []
+      if (typeof (imageArray) === 'object') {
+        images = imageArray.map((image) => {
+          return {
+            id: image.id,
+            url: `http://localhost:8000${image.file}`,
+          }
+        })
+        this.viewerImages = images
+      }
     }
   }
 }
@@ -199,8 +241,12 @@ export default {
       font-size: 18px;
     }
   }
+  .viewer-card {
+    text-align: center;
+  }
   .viewer {
-    width: 150px;
-    margin: 10px;
+    // width: 150px;
+    height: 120px;
+    margin: 10px auto;
   }
 </style>

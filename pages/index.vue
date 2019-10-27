@@ -116,7 +116,7 @@ export default {
     department: '',
     departments: ['CPE', 'CME'],
     course: '',
-    prefixUrl: '/course',
+    prefixUrl: '/courses',
     courses: [
       {
         name: 'CPE523',
@@ -195,12 +195,12 @@ export default {
       &__img {
         width: 60px;
         height: 60px;
-        border-radius: 50%;
+        // border-radius: 50%;
         background: transparent;
         margin: 0 auto;
         img {
           width: 100%;
-          border-radius: 50%;
+          // border-radius: 50%;
         }
       }
       &__name {

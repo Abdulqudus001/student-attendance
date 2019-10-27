@@ -20,3 +20,12 @@ export const actions = {
     commit('updateCourses', payload)
   }
 }
+
+export const getters = {
+  getCourseNames (state) {
+    const courseNames = state.courses.map((course) => {
+      return `${course.department}${course.code}`
+    })
+    return [...courseNames, 'Reset']
+  }
+}

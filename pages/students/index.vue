@@ -15,7 +15,7 @@
               <v-text-field v-model="studentId" label="ID" required />
             </v-flex>
             <v-flex sm4>
-              <v-btn color="blue-grey">
+              <v-btn color="blue-grey" @click="filterById">
                 <v-icon left>
                   mdi-magnify
                 </v-icon>By ID
@@ -40,10 +40,10 @@
         <v-flex sm4>
           <v-layout wrap align-center justify-center>
             <v-flex sm7>
-              <v-select v-model="course" :items="courses" label="Courses" required />
+              <v-select v-model="course" :items="getCourseNames" label="Courses" required />
             </v-flex>
             <v-flex sm5>
-              <v-btn color="error">
+              <v-btn color="error" @click="filterByCourse">
                 <v-icon left>
                   mdi-magnify
                 </v-icon>By course
@@ -54,7 +54,7 @@
       </v-layout>
     </v-card>
     <v-layout wrap class="students">
-      <v-flex v-for="(student, index) in students" :key="index" sm3>
+      <v-flex v-for="(student, index) in filteredList" :key="index" sm3>
         <v-card class="student">
           <div class="student__img">
             <img v-if="student.gender=='M'" src="/icons/man.png" alt>
@@ -108,13 +108,14 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import StudentModal from '@/components/studentModal.vue'
 export default {
   components: { StudentModal },
   data: () => ({
     studentId: '',
     studentName: '',
-    courses: ['CPE523', 'CPE524', 'CPE525', 'CPE525', 'EEE522'],
+    // courses: ['CPE523', 'CPE524', 'CPE525', 'CPE525', 'EEE522'],
     course: '',
     students: [
       {
@@ -163,45 +164,88 @@ export default {
         matric_no: '2014/1/52228cp'
       }
     ],
-    filterBy: null,
-    param: null,
     showDialog: false,
     dialogAction: 'edit',
-    currentStudent: {}
+    currentStudent: {},
+    filteredList: []
   }),
   computed: {
-    // filteredList () {
-    //   let filteredStudents = this.students
-    //   if (this.param && this.filterBy) {
-    //     filteredStudents = this.students.filter((student) => {
-    //       if (this.param && this.filterBy === 'name') {
-    //         return student.name.toLowerCase() === this.param.toLowerCase()
-    //       } else if (this.param && this.filterBy === 'id') {
-    //         return student.id.toLowerCase() === this.param.toLowerCase()
-    //       }
-    //     })
-    //   } else {
-    //     filteredStudents = this.students
-    //   }
-    //   return filteredStudents
-    // }
+    ...mapGetters(['getCourseNames'])
+  },
+  watch: {
+    studentName (val) {
+      if (val.length === 0) {
+        this.filteredList = this.students
+      }
+    },
+    studentId (val) {
+      if (val.length === 0) {
+        this.filteredList = this.students
+      }
+    },
+    course (val) {
+      if (val === 'Reset') {
+        this.filteredList = this.students
+      }
+    }
   },
   mounted () {
     if (this.$store.state.students.length > 0) {
       this.students = this.$store.state.students
+      this.filteredList = this.students
+      this.fetchStudentCourses()
     } else {
       this.fetchStudents()
+    }
+    // Check if course exist in store else query backend
+    if (this.$store.state.courses.length <= 0) {
+      this.fetchCourses()
     }
   },
   methods: {
     filterByName () {
-      this.filterBy = 'name'
-      this.param = this.studentName
+      const filteredList = this.students.filter((student) => {
+        return student.full_name.toLowerCase().includes(this.studentName.toLowerCase())
+      })
+      this.filteredList = filteredList
+    },
+    filterById () {
+      const filteredList = this.students.filter((student) => {
+        return student.matric_no.toLowerCase().includes(this.studentId.toLowerCase())
+      })
+      this.filteredList = filteredList
+    },
+    filterByCourse () {
+      const filteredList = this.students.filter((student) => {
+        return student.courses.includes(this.course)
+      })
+      this.filteredList = filteredList
+    },
+    async fetchCourses () {
+      const courses = await this.$axios.$get(`course/`)
+      this.$store.dispatch('updateCourses', courses)
     },
     async fetchStudents () {
       const students = await this.$axios.$get('/students/')
       this.$store.dispatch('updateStudent', students)
       this.students = students
+      this.filteredList = this.students
+      this.fetchStudentCourses()
+      this.$store.dispatch('updateStudent', this.students)
+    },
+    async fetchStudentCourses () {
+      // Get individual student courses
+      const updatedStudent = []
+      await this.students.forEach((student) => {
+        this.$axios.$get(`/students/${student.id}/courses`).then((res) => {
+          const courses = res.map((course) => {
+            return `${course.department}${course.code}`
+          })
+          const newObj = { ...student, courses: [...courses] }
+          updatedStudent.push(newObj)
+        })
+      })
+      this.students = updatedStudent
     },
     async deleteStudent (id) {
       await this.$axios.delete(`/students/${id}/`).then((res) => {
