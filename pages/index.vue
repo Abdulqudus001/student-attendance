@@ -4,14 +4,14 @@
       <v-layout wrap align-center justify-center>
         <v-flex sm4>
           <v-layout wrap align-center justify-center>
-            <v-flex sm8>
+            <v-flex sm7>
               <v-text-field
                 v-model="courseName"
                 label="Name"
                 required
               />
             </v-flex>
-            <v-flex sm4>
+            <v-flex sm5>
               <v-btn color="info">
                 <v-icon left>
                   mdi-magnify

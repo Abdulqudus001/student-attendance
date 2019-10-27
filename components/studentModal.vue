@@ -81,6 +81,7 @@ export default {
         return 'Edit students info'
       } return 'Add new student'
     },
+    // Disables save button if these fields are empty
     isFormValid () {
       if (this.name && this.matricNumber && this.email && this.gender && this.sex) {
         return false

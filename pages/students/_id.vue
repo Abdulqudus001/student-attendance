@@ -5,11 +5,15 @@
         <v-card class="student">
           <div class="student__img">
             <img v-if="viewerImages[0]" :src="viewerImages[0].url" :alt="student.full_name">
-            <img v-else-if="student.id === 'M'" src="/icons/man.png" :alt="student.full_name">
-            <img v-else-if="student.id === 'F'" src="/icons/woman.png" :alt="student.full_name">
+            <img v-else-if="student.gender === 'M'" src="/icons/man.png" :alt="student.full_name">
+            <img
+              v-else-if="student.gender === 'F'"
+              src="/icons/woman.png"
+              :alt="student.full_name"
+            >
           </div>
           <p class="student__name">
-            {{ student.full_name }}
+            {{ student.full_name | capitalize }}
           </p>
           <p><b>Matric No:</b> {{ student.matric_no }}</p>
           <p><b>Email:</b> {{ student.email }}</p>
@@ -112,6 +116,7 @@
 
           <v-btn
             color="blue-grey"
+            :disabled="isFormValid"
             @click="addImage"
           >
             Save
@@ -137,7 +142,14 @@ export default {
     imagesToBeUploaded: []
   }),
   computed: {
-    ...mapState(['courses'])
+    ...mapState(['courses']),
+    isFormValid () {
+      if (this.imagesToBeUploaded.length > 0) {
+        return false
+      } else {
+        return true
+      }
+    }
   },
   mounted () {
     this.fetchStudent()
@@ -184,6 +196,8 @@ export default {
           // Fetch students list after update
           this.fetchStudentImages()
           this.showImageDialog = false
+        }).catch((err) => {
+          console.log(err)
         })
       })
     },

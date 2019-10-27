@@ -73,6 +73,7 @@
 
           <v-btn
             color="blue-grey"
+            :disabled="isFormValid"
             @click="submit"
           >
             Save
@@ -116,6 +117,14 @@ export default {
       if (this.action === 'edit') {
         return 'Edit course info'
       } return 'Add new course'
+    },
+    // Disables save button if these fields are empty
+    isFormValid () {
+      if (this.name && this.department && this.code && this.description) {
+        return false
+      } else {
+        return true
+      }
     }
   },
   watch: {

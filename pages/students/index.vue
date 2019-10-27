@@ -61,7 +61,7 @@
             <img v-else src="/icons/woman.png" alt>
           </div>
           <p class="student__name">
-            {{ student.full_name }}
+            {{ student.full_name | capitalize }}
           </p>
           <v-layout wrap justify-center>
             <v-flex sm4>
