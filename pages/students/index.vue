@@ -57,8 +57,13 @@
       <v-flex v-for="(student, index) in filteredList" :key="index" sm3>
         <v-card class="student">
           <div class="student__img">
-            <img v-if="student.gender=='M'" src="/icons/man.png" alt>
-            <img v-else src="/icons/woman.png" alt>
+            <img v-if="student.image" :src="student.image" :alt="student.full_name">
+            <img v-else-if="student.gender === 'M'" src="/icons/man.png" :alt="student.full_name">
+            <img
+              v-else-if="student.gender === 'F'"
+              src="/icons/woman.png"
+              :alt="student.full_name"
+            >
           </div>
           <p class="student__name">
             {{ student.full_name | capitalize }}
@@ -115,7 +120,6 @@ export default {
   data: () => ({
     studentId: '',
     studentName: '',
-    // courses: ['CPE523', 'CPE524', 'CPE525', 'CPE525', 'EEE522'],
     course: '',
     students: [
       {
@@ -194,6 +198,8 @@ export default {
       this.students = this.$store.state.students
       this.filteredList = this.students
       this.fetchStudentCourses()
+      this.fetchStudentImages()
+      this.$store.dispatch('updateStudent', this.students)
     } else {
       this.fetchStudents()
     }
@@ -227,11 +233,17 @@ export default {
     },
     async fetchStudents () {
       const students = await this.$axios.$get('/students/')
+      // Dispatch students without courses list to store
       this.$store.dispatch('updateStudent', students)
       this.students = students
       this.filteredList = this.students
+      // Get students with courses list and dispatch to store
       this.fetchStudentCourses()
       this.$store.dispatch('updateStudent', this.students)
+      // Get student with profile photo and dispatch to store
+      this.fetchStudentImages()
+      this.$store.dispatch('updateStudent', this.students)
+      this.filteredList = this.students
     },
     async fetchStudentCourses () {
       // Get individual student courses
@@ -243,9 +255,24 @@ export default {
           })
           const newObj = { ...student, courses: [...courses] }
           updatedStudent.push(newObj)
+          this.students = updatedStudent
+          this.filteredList = this.students
         })
       })
-      this.students = updatedStudent
+    },
+    async fetchStudentImages () {
+      const updatedStudent = []
+      await this.students.forEach((student) => {
+        this.$axios.$get(`/students/${student.id}/images`).then((res) => {
+          const images = res.map((image) => {
+            return `http://localhost:8000${image.file}`
+          })
+          const newObj = { ...student, image: images[0] }
+          updatedStudent.push(newObj)
+          this.students = updatedStudent
+          this.filteredList = this.students
+        })
+      })
     },
     async deleteStudent (id) {
       await this.$axios.delete(`/students/${id}/`).then((res) => {
