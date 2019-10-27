@@ -40,7 +40,7 @@
         <v-flex sm4>
           <v-layout wrap align-center justify-center>
             <v-flex sm7>
-              <v-select v-model="course" :items="getCourseNames" label="Courses" required />
+              <v-select v-model="course" :items="courseNamesWithReset" label="Courses" required />
             </v-flex>
             <v-flex sm5>
               <v-btn color="error" @click="filterByCourse">
@@ -174,7 +174,10 @@ export default {
     filteredList: []
   }),
   computed: {
-    ...mapGetters(['getCourseNames'])
+    ...mapGetters(['getCourseNames']),
+    courseNamesWithReset () {
+      return [...this.getCourseNames, 'Reset']
+    }
   },
   watch: {
     studentName (val) {

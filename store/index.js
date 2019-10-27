@@ -26,6 +26,6 @@ export const getters = {
     const courseNames = state.courses.map((course) => {
       return `${course.department}${course.code}`
     })
-    return [...courseNames, 'Reset']
+    return courseNames
   }
 }

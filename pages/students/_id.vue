@@ -21,12 +21,19 @@
             v-for="(course, index) in studentCourses"
             :key="index"
             class="ma-2"
-            close
-            color="orange"
+            color="info"
             label
           >
             {{ course.department }}{{ course.code }}
           </v-chip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn fab small v-on="on" @click="showAddCourseDialog = true">
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
+            <span>Add Course</span>
+          </v-tooltip>
         </v-card>
       </v-flex>
       <v-flex xs12 sm7>
@@ -54,9 +61,21 @@
                 </v-flex>
               </v-layout>
             </viewer>
-            <v-btn fab absolute right bottom @click="showImageDialog = true">
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on }">
+                <v-btn
+                  fab
+                  absolute
+                  right
+                  bottom
+                  v-on="on"
+                  @click="showImageDialog = true"
+                >
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </template>
+              <span>Add Image</span>
+            </v-tooltip>
           </v-card-text>
         </v-card>
       </v-flex>
@@ -124,11 +143,56 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="showAddCourseDialog" max-width="360px">
+      <v-card>
+        <v-card-title>Add Course</v-card-title>
+        <v-card-text>
+          <v-combobox
+            v-model="selectedCourses"
+            :items="getCourseNames"
+            chips
+            clearable
+            label="Registerd students"
+            multiple
+            solo
+          >
+            <template v-slot:selection="{ attrs, item, select, selected }">
+              <v-chip
+                v-bind="attrs"
+                :input-value="selected"
+                close
+                @click="select"
+                @click:close="remove(item)"
+              >
+                <strong>{{ item }}</strong>&nbsp;
+              </v-chip>
+            </template>
+          </v-combobox>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="error"
+            @click="showAddCourseDialog = false"
+          >
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="blue-grey"
+            :disabled="selectedCourses.length <= 0"
+            @click="addCourseToStudent"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 export default {
   data: () => ({
     student: {},
@@ -139,10 +203,13 @@ export default {
     images: [],
     viewerImages: [],
     seletedImages: [],
-    imagesToBeUploaded: []
+    imagesToBeUploaded: [],
+    showAddCourseDialog: false,
+    selectedCourses: []
   }),
   computed: {
     ...mapState(['courses']),
+    ...mapGetters(['getCourseNames']),
     isFormValid () {
       if (this.imagesToBeUploaded.length > 0) {
         return false
@@ -171,6 +238,7 @@ export default {
       const id = this.$route.params.id
       const courses = await this.$axios.$get(`${this.url}/${id}/courses`)
       this.studentCourses = courses
+      this.selectedCourses = this.extractCourseNames(courses)
     },
     async fetchCourses () {
       const courses = await this.$axios.$get('/courses/')
@@ -229,6 +297,36 @@ export default {
         })
         this.viewerImages = images
       }
+    },
+    remove (item) {
+      this.selectedCourses.splice(this.selectedCourses.indexOf(item), 1)
+      this.selectedCourses = [...this.selectedCourses]
+    },
+    addCourseToStudent () {
+      const selectedCourses = this.allCourses.filter((course) => {
+        return this.selectedCourses.includes(`${course.department}${course.code}`)
+      })
+      selectedCourses.forEach(this.addCourse)
+    },
+    addCourse (course) {
+      this.$axios.put(`/courses/${course.id}/`, {
+        department: course.department,
+        name: course.name,
+        code: course.code,
+        description: course.description,
+        registered_students: [...course.registered_students, this.$route.params.id]
+      }).then((res) => {
+        this.fetchStudentCourses()
+        this.showAddCourseDialog = false
+        this.fetchCourses()
+      }).catch((err) => {
+        console.log(err)
+      })
+    },
+    extractCourseNames (courses) {
+      return courses.map((course) => {
+        return `${course.department}${course.code}`
+      })
     }
   }
 }
