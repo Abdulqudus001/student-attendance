@@ -86,6 +86,7 @@
       max-width="500"
     >
       <v-card>
+        <v-alert v-model="showAlert" color="error">{{ alertMessage }}</v-alert>
         <v-card-title class="headline" />
         <v-card-text>
           <viewer :images="seletedImages">
@@ -93,7 +94,7 @@
           </viewer>
           <v-file-input
             v-model="images"
-            accept="image/*"
+            accept="image/*;capture=camera"
             color="deep-purple accent-4"
             counter
             label="Image"
@@ -152,7 +153,7 @@
             :items="getCourseNames"
             chips
             clearable
-            label="Registerd students"
+            label="Select courses"
             multiple
             solo
           >
@@ -205,7 +206,9 @@ export default {
     seletedImages: [],
     imagesToBeUploaded: [],
     showAddCourseDialog: false,
-    selectedCourses: []
+    selectedCourses: [],
+    showAlert: false,
+    alertMessage: ''
   }),
   computed: {
     ...mapState(['courses']),
@@ -265,7 +268,8 @@ export default {
           this.fetchStudentImages()
           this.showImageDialog = false
         }).catch((err) => {
-          console.log(err)
+          this.showAlert = true
+          this.alertMessage = err.response.data[Object.keys(err.response.data)[0]]
         })
       })
     },
@@ -337,13 +341,14 @@ export default {
     padding: 10px 0;
     text-align: center;
     &__img {
-      width: 100px;
-      height: 100px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       background: transparent;
       margin: 0 auto;
       img {
         width: 100%;
+        height: 100%;
         border-radius: 50%;
       }
     }

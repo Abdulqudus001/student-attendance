@@ -77,7 +77,7 @@
               </v-btn>
             </v-flex>
             <v-flex sm4>
-              <v-btn @click.stop="deleteStudent(student.id)">
+              <v-btn @click.stop="showDeleteDialog(student)">
                 <v-icon color="error">
                   mdi-delete
                 </v-icon>
@@ -109,6 +109,29 @@
       </template>
       <span>Add student</span>
     </v-tooltip>
+    <v-dialog v-model="deleteDialog" max-width="280">
+      <v-card>
+        <v-card-title>Are you sure you want to delete this course??</v-card-title>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue-grey"
+            text
+            @click="deleteDialog = false"
+          >
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="error"
+            text
+            @click="deleteStudent(selectedStudent.id)"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -171,7 +194,9 @@ export default {
     showDialog: false,
     dialogAction: 'edit',
     currentStudent: {},
-    filteredList: []
+    filteredList: [],
+    selectedStudent: '',
+    deleteDialog: false
   }),
   computed: {
     ...mapGetters(['getCourseNames']),
@@ -198,10 +223,10 @@ export default {
   },
   mounted () {
     if (this.$store.state.students.length > 0) {
-      this.students = this.$store.state.students
+      this.students = [...this.$store.state.students]
       this.filteredList = this.students
-      this.fetchStudentCourses()
-      this.fetchStudentImages()
+      this.fetchStudentCoursesAndImages()
+      // this.fetchStudentImages()
       this.$store.dispatch('updateStudent', this.students)
     } else {
       this.fetchStudents()
@@ -225,61 +250,73 @@ export default {
       this.filteredList = filteredList
     },
     filterByCourse () {
+      this.filteredList = this.students
       const filteredList = this.students.filter((student) => {
         return student.courses.includes(this.course)
       })
       this.filteredList = filteredList
     },
     async fetchCourses () {
-      const courses = await this.$axios.$get(`course/`)
+      const courses = await this.$axios.$get(`courses/`)
       this.$store.dispatch('updateCourses', courses)
     },
-    async fetchStudents () {
-      const students = await this.$axios.$get('/students/')
-      // Dispatch students without courses list to store
-      this.$store.dispatch('updateStudent', students)
-      this.students = students
-      this.filteredList = this.students
-      // Get students with courses list and dispatch to store
-      this.fetchStudentCourses()
-      this.$store.dispatch('updateStudent', this.students)
-      // Get student with profile photo and dispatch to store
-      this.fetchStudentImages()
-      this.$store.dispatch('updateStudent', this.students)
-      this.filteredList = this.students
+    fetchStudents () {
+      this.$axios.$get('/students/').then((res) => {
+        // Dispatch students without courses list to store
+        this.$store.dispatch('updateStudent', res)
+        this.students = res
+        this.filteredList = this.students
+        // Get students with courses list and dispatch to store
+        this.fetchStudentCoursesAndImages()
+        this.$store.dispatch('updateStudent', this.students)
+        // Get student with profile photo and dispatch to store
+        // this.fetchStudentImages()
+        // this.$store.dispatch('updateStudent', this.students)
+      })
     },
-    async fetchStudentCourses () {
+    fetchStudentCoursesAndImages () {
       // Get individual student courses
       const updatedStudent = []
-      await this.students.forEach((student) => {
+      this.students.forEach((student) => {
         this.$axios.$get(`/students/${student.id}/courses`).then((res) => {
           const courses = res.map((course) => {
             return `${course.department}${course.code}`
           })
-          const newObj = { ...student, courses: [...courses] }
-          updatedStudent.push(newObj)
-          this.students = updatedStudent
-          this.filteredList = this.students
+          this.$axios.$get(`/students/${student.id}/images`).then((res) => {
+            const images = res.map((image) => {
+              return `http://localhost:8000${image.file}`
+            })
+            const newObj = { ...student, image: images[0], courses: [...courses] }
+            updatedStudent.push(newObj)
+            this.students = updatedStudent
+            this.filteredList = this.students
+          })
         })
       })
     },
-    async fetchStudentImages () {
-      const updatedStudent = []
-      await this.students.forEach((student) => {
-        this.$axios.$get(`/students/${student.id}/images`).then((res) => {
-          const images = res.map((image) => {
-            return `http://localhost:8000${image.file}`
-          })
-          const newObj = { ...student, image: images[0] }
-          updatedStudent.push(newObj)
-          this.students = updatedStudent
-          this.filteredList = this.students
-        })
-      })
+    // fetchStudentImages () {
+    //   const updatedStudent = []
+    //   this.students.forEach((student) => {
+    //     this.$axios.$get(`/students/${student.id}/images`).then((res) => {
+    //       const images = res.map((image) => {
+    //         return `http://localhost:8000${image.file}`
+    //       })
+    //       const newObj = { ...student, image: images[0] }
+    //       updatedStudent.push(newObj)
+    //       this.students = updatedStudent
+    //       this.filteredList = this.students
+    //     })
+    //   })
+    // },
+    showDeleteDialog (student) {
+      this.deleteDialog = true
+      this.selectedStudent = student
     },
     async deleteStudent (id) {
       await this.$axios.delete(`/students/${id}/`).then((res) => {
         this.fetchStudents()
+        this.fetchCourses()
+        this.deleteDialog = false
       })
     },
     showEditDialog (action, student) {

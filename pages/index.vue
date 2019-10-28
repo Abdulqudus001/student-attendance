@@ -72,7 +72,7 @@
               </v-btn>
             </v-flex>
             <v-flex sm4>
-              <v-btn @click.stop="deleteCourse(course.id)">
+              <v-btn @click.stop="showDeleteDialog(course)">
                 <v-icon color="error">
                   mdi-delete
                 </v-icon>
@@ -97,6 +97,29 @@
       </template>
       <span>Add course</span>
     </v-tooltip>
+    <v-dialog v-model="deleteDialog" max-width="280">
+      <v-card>
+        <v-card-title>Are you sure you want to delete this course??</v-card-title>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue-grey"
+            text
+            @click="deleteDialog = false"
+          >
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="error"
+            text
+            @click="deleteCourse(selectedCourse.id)"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <course-modal
       :show="showDialog"
       :action="dialogAction"
@@ -116,6 +139,7 @@ export default {
     department: '',
     departments: ['CPE', 'CME'],
     course: '',
+    selectedCourse: '',
     prefixUrl: '/courses',
     courses: [
       {
@@ -151,7 +175,8 @@ export default {
     ],
     showDialog: false,
     dialogAction: 'edit',
-    currentCourse: {}
+    currentCourse: {},
+    deleteDialog: false
   }),
   mounted () {
     if (this.$store.state.courses.length > 0) {
@@ -174,9 +199,14 @@ export default {
       this.showDialog = true
       this.currentCourse = course
     },
+    showDeleteDialog (course) {
+      this.deleteDialog = true
+      this.selectedCourse = course
+    },
     async deleteCourse (id) {
       await this.$axios.delete(`${this.prefixUrl}/${id}/`).then((res) => {
         this.fetchCourses()
+        this.deleteDialog = false
       })
     },
   }

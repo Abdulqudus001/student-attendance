@@ -43,7 +43,7 @@
                 :items="allStudents"
                 chips
                 clearable
-                label="Registerd students"
+                label="Select students"
                 multiple
                 solo
               >

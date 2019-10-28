@@ -3,9 +3,10 @@
     <v-dialog
       v-model="show"
       persistent
-      max-width="290"
+      max-width="360"
     >
       <v-card>
+        <v-alert v-model="showAlert" color="error">{{ alertMessage }}</v-alert>
         <v-card-title class="headline">
           {{ dialogTitle }}
         </v-card-title>
@@ -33,7 +34,7 @@
           <v-spacer />
           <v-btn
             color="error"
-            @click="$emit('hideDialog')"
+            @click="closeModal"
           >
             Cancel
           </v-btn>
@@ -73,7 +74,9 @@ export default {
     matricNumber: '',
     email: '',
     sex: '',
-    gender: ['M', 'F']
+    gender: ['M', 'F'],
+    showAlert: false,
+    alertMessage: ''
   }),
   computed: {
     dialogTitle () {
@@ -115,10 +118,12 @@ export default {
         }).then((res) => {
           this.clearForm()
           this.$emit('savedStudent')
+          this.$emit('hideDialog')
+          this.showAlert = false
         }).catch((err) => {
-          console.log(err)
+          this.showAlert = true
+          this.alertMessage = err.response.data[Object.keys(err.response.data)[0]][0]
         })
-        this.$emit('hideDialog')
       } else {
         await this.$axios.put(`/students/${this.student.id}/`, {
           gender: this.sex,
@@ -128,9 +133,17 @@ export default {
         }).then((res) => {
           this.clearForm()
           this.$emit('savedStudent')
+          this.$emit('hideDialog')
+          this.showAlert = false
+        }).catch((err) => {
+          this.showAlert = true
+          this.alertMessage = err.response.data[Object.keys(err.response.data)[0]][0]
         })
-        this.$emit('hideDialog')
       }
+    },
+    closeModal () {
+      this.$emit('hideDialog')
+      this.showAlert = false
     },
     clearForm () {
       this.sex = ''
