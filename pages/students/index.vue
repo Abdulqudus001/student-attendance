@@ -20,7 +20,7 @@
               />
             </v-flex>
             <v-flex sm4>
-              <v-btn color="blue-grey" @click="filterById" :disabled="disableIdSearchBtn">
+              <v-btn color="blue-grey" :disabled="disableIdSearchBtn" @click="filterById">
                 <v-icon left>
                   mdi-magnify
                 </v-icon>By ID
@@ -39,7 +39,7 @@
               />
             </v-flex>
             <v-flex sm5>
-              <v-btn color="info" @click="filterByName" :disabled="disableNameSearchBtn">
+              <v-btn color="info" :disabled="disableNameSearchBtn" @click="filterByName">
                 <v-icon left>
                   mdi-magnify
                 </v-icon>By Name

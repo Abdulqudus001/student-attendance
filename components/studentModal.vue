@@ -6,7 +6,9 @@
       max-width="360"
     >
       <v-card>
-        <v-alert v-model="showAlert" color="error">{{ alertMessage }}</v-alert>
+        <v-alert v-model="showAlert" color="error">
+          {{ alertMessage }}
+        </v-alert>
         <v-card-title class="headline">
           {{ dialogTitle }}
         </v-card-title>

@@ -86,7 +86,9 @@
       max-width="500"
     >
       <v-card>
-        <v-alert v-model="showAlert" color="error">{{ alertMessage }}</v-alert>
+        <v-alert v-model="showAlert" color="error">
+          {{ alertMessage }}
+        </v-alert>
         <v-card-title class="headline" />
         <v-card-text>
           <viewer :images="seletedImages">

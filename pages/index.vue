@@ -13,7 +13,7 @@
               />
             </v-flex>
             <v-flex sm5>
-              <v-btn color="info" @click="filterByName" :disabled="disableNameSearchBtn">
+              <v-btn color="info" :disabled="disableNameSearchBtn" @click="filterByName">
                 <v-icon left>
                   mdi-magnify
                 </v-icon> By Name
