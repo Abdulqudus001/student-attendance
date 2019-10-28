@@ -2,17 +2,18 @@
   <v-container grid-list-md>
     <v-card class="search-options">
       <v-layout wrap align-center justify-center>
-        <v-flex sm4>
+        <v-flex sm5>
           <v-layout wrap align-center justify-center>
             <v-flex sm7>
               <v-text-field
                 v-model="courseName"
                 label="Name"
                 required
+                @keyup.enter="filterByName"
               />
             </v-flex>
             <v-flex sm5>
-              <v-btn color="info">
+              <v-btn color="info" @click="filterByName" :disabled="disableNameSearchBtn">
                 <v-icon left>
                   mdi-magnify
                 </v-icon> By Name
@@ -20,29 +21,30 @@
             </v-flex>
           </v-layout>
         </v-flex>
-        <v-flex sm4>
+        <v-flex sm2>
           <v-layout wrap align-center justify-center>
-            <v-flex sm7>
+            <v-flex sm12>
               <v-select
                 v-model="department"
                 :items="departments"
                 label="Department"
                 required
+                @change="filterByCourse"
               />
             </v-flex>
-            <v-flex sm5>
-              <v-btn color="blue-grey">
+            <!-- <v-flex sm5>
+              <v-btn color="blue-grey" @click="filterByCourse" :disabled="disableCourseSearchBtn">
                 <v-icon left>
                   mdi-magnify
                 </v-icon> By Dept.
               </v-btn>
-            </v-flex>
+            </v-flex> -->
           </v-layout>
         </v-flex>
       </v-layout>
     </v-card>
     <v-layout wrap class="courses">
-      <v-flex v-for="(course, index) in courses" :key="index" sm3>
+      <v-flex v-for="(course, index) in filteredList" :key="index" sm3>
         <v-card class="course">
           <div class="course__img">
             <img src="/icons/course.png" alt="Book icon">
@@ -137,7 +139,7 @@ export default {
   data: () => ({
     courseName: '',
     department: '',
-    departments: ['CPE', 'CME'],
+    departments: ['CPE', 'CME', 'All'],
     course: '',
     selectedCourse: '',
     prefixUrl: '/courses',
@@ -176,20 +178,61 @@ export default {
     showDialog: false,
     dialogAction: 'edit',
     currentCourse: {},
-    deleteDialog: false
+    deleteDialog: false,
+    filteredList: []
   }),
+  computed: {
+    disableNameSearchBtn () {
+      if (this.courseName.length === 0) {
+        return true
+      } return false
+    },
+    disableCourseSearchBtn () {
+      if (this.department.length === 0) {
+        return true
+      } return false
+    }
+  },
+  watch: {
+    courseName (val) {
+      if (val.length === 0) {
+        this.filteredList = this.courses
+      }
+    },
+    department (val) {
+      if (val === 'All') {
+        this.filteredList = this.courses
+      }
+    }
+  },
   mounted () {
     if (this.$store.state.courses.length > 0) {
       this.courses = this.$store.state.courses
+      this.filteredList = this.courses
     } else {
       this.fetchCourses()
     }
   },
   methods: {
+    filterByName () {
+      const filteredList = this.courses.filter((course) => {
+        const fullName = `${course.department}${course.code}`
+        return fullName.toLowerCase().includes(this.courseName.toLowerCase())
+      })
+      this.filteredList = filteredList
+    },
+    filterByCourse () {
+      this.filteredList = this.courses
+      const filteredList = this.courses.filter((course) => {
+        return course.department.includes(this.department)
+      })
+      this.filteredList = filteredList
+    },
     async fetchCourses () {
       const courses = await this.$axios.$get(`${this.prefixUrl}/`)
       this.$store.dispatch('updateCourses', courses)
       this.courses = courses
+      this.filteredList = this.courses
     },
     hideDialog () {
       this.showDialog = false

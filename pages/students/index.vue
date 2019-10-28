@@ -12,10 +12,15 @@
         <v-flex sm4>
           <v-layout wrap align-center justify-center>
             <v-flex sm8>
-              <v-text-field v-model="studentId" label="ID" required />
+              <v-text-field
+                v-model="studentId"
+                label="ID"
+                required
+                @keyup.enter="filterById"
+              />
             </v-flex>
             <v-flex sm4>
-              <v-btn color="blue-grey" @click="filterById">
+              <v-btn color="blue-grey" @click="filterById" :disabled="disableIdSearchBtn">
                 <v-icon left>
                   mdi-magnify
                 </v-icon>By ID
@@ -23,13 +28,18 @@
             </v-flex>
           </v-layout>
         </v-flex>
-        <v-flex sm4>
+        <v-flex sm6>
           <v-layout wrap align-center justify-center>
             <v-flex sm7>
-              <v-text-field v-model="studentName" label="Name" required />
+              <v-text-field
+                v-model="studentName"
+                label="Name"
+                required
+                @keyup.enter="filterByName"
+              />
             </v-flex>
             <v-flex sm5>
-              <v-btn color="info" @click="filterByName">
+              <v-btn color="info" @click="filterByName" :disabled="disableNameSearchBtn">
                 <v-icon left>
                   mdi-magnify
                 </v-icon>By Name
@@ -37,18 +47,24 @@
             </v-flex>
           </v-layout>
         </v-flex>
-        <v-flex sm4>
+        <v-flex sm2>
           <v-layout wrap align-center justify-center>
-            <v-flex sm7>
-              <v-select v-model="course" :items="courseNamesWithReset" label="Courses" required />
+            <v-flex sm12>
+              <v-select
+                v-model="course"
+                :items="courseNamesWithReset"
+                label="Courses"
+                required
+                @change="filterByCourse"
+              />
             </v-flex>
-            <v-flex sm5>
-              <v-btn color="error" @click="filterByCourse">
+            <!-- <v-flex sm5>
+              <v-btn color="error" @click="filterByCourse" :disabled="disableCourseSearchBtn">
                 <v-icon left>
                   mdi-magnify
                 </v-icon>By course
               </v-btn>
-            </v-flex>
+            </v-flex> -->
           </v-layout>
         </v-flex>
       </v-layout>
@@ -143,7 +159,7 @@ export default {
   data: () => ({
     studentId: '',
     studentName: '',
-    course: '',
+    course: 'All',
     students: [
       {
         full_name: 'Abdul',
@@ -201,7 +217,22 @@ export default {
   computed: {
     ...mapGetters(['getCourseNames']),
     courseNamesWithReset () {
-      return [...this.getCourseNames, 'Reset']
+      return [...this.getCourseNames, 'All']
+    },
+    disableNameSearchBtn () {
+      if (this.studentName.length === 0) {
+        return true
+      } return false
+    },
+    disableCourseSearchBtn () {
+      if (this.course.length === 0) {
+        return true
+      } return false
+    },
+    disableIdSearchBtn () {
+      if (this.studentId.length === 0) {
+        return true
+      } return false
     }
   },
   watch: {
@@ -216,7 +247,7 @@ export default {
       }
     },
     course (val) {
-      if (val === 'Reset') {
+      if (val === 'All') {
         this.filteredList = this.students
       }
     }
@@ -275,7 +306,7 @@ export default {
       })
     },
     fetchStudentCoursesAndImages () {
-      // Get individual student courses
+      // Get individual student courses and images
       const updatedStudent = []
       this.students.forEach((student) => {
         this.$axios.$get(`/students/${student.id}/courses`).then((res) => {
@@ -294,20 +325,6 @@ export default {
         })
       })
     },
-    // fetchStudentImages () {
-    //   const updatedStudent = []
-    //   this.students.forEach((student) => {
-    //     this.$axios.$get(`/students/${student.id}/images`).then((res) => {
-    //       const images = res.map((image) => {
-    //         return `http://localhost:8000${image.file}`
-    //       })
-    //       const newObj = { ...student, image: images[0] }
-    //       updatedStudent.push(newObj)
-    //       this.students = updatedStudent
-    //       this.filteredList = this.students
-    //     })
-    //   })
-    // },
     showDeleteDialog (student) {
       this.deleteDialog = true
       this.selectedStudent = student
@@ -330,13 +347,6 @@ export default {
     showStudent (id) {
       this.$router.push(`/students/${id}`)
     }
-    // async x () {
-    //   await this.$axios.post('/students/1/courses/', {
-    //     course: 1
-    //   }).then((res) => {
-    //     console.log(res)
-    //   })
-    // }
   }
 }
 </script>
