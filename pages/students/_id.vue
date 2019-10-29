@@ -1,5 +1,6 @@
 <template>
   <v-container grid-list-md>
+    <capture-image :show="captureImage" v-if="captureImage" @closeDialog="closeDialog" />
     <v-layout wrap align-center>
       <v-flex xs12 sm5>
         <v-card class="student">
@@ -128,6 +129,12 @@
           </v-file-input>
         </v-card-text>
         <v-card-actions>
+          <v-btn
+            color="error"
+            @click="captureImage = true"
+          >
+            Start Capture
+          </v-btn>
           <v-spacer />
           <v-btn
             color="error"
@@ -196,7 +203,9 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
+import CaptureImage from '@/components/captureImage'
 export default {
+  components: { CaptureImage },
   data: () => ({
     student: {},
     studentCourses: [],
@@ -210,7 +219,8 @@ export default {
     showAddCourseDialog: false,
     selectedCourses: [],
     showAlert: false,
-    alertMessage: ''
+    alertMessage: '',
+    captureImage: false
   }),
   computed: {
     ...mapState(['courses']),
@@ -234,6 +244,12 @@ export default {
     this.fetchStudentImages()
   },
   methods: {
+    closeDialog () {
+      // Close dialog for image capture
+      this.captureImage = false
+      this.showImageDialog = false
+      this.fetchStudentImages()
+    },
     async fetchStudent () {
       const id = this.$route.params.id
       const student = await this.$axios.$get(`${this.url}/${id}`)
@@ -298,7 +314,7 @@ export default {
         images = imageArray.map((image) => {
           return {
             id: image.id,
-            url: `http://localhost:8000${image.file}`,
+            url: `http://192.168.122.1:8000${image.file}`,
           }
         })
         this.viewerImages = images
@@ -345,13 +361,13 @@ export default {
     &__img {
       width: 70px;
       height: 70px;
-      border-radius: 50%;
+      // border-radius: 50%;
       background: transparent;
       margin: 0 auto;
       img {
         width: 100%;
         height: 100%;
-        border-radius: 50%;
+        // border-radius: 50%;
       }
     }
     &__name {

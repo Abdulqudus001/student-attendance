@@ -25,6 +25,7 @@ module.exports = {
   ** Global CSS
   */
   css: [
+    '@mdi/font/css/materialdesignicons.css'
   ],
   /*
   ** Plugins to load before mounting the App
@@ -48,6 +49,10 @@ module.exports = {
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios'
   ],
+  // Environment variables
+  env: {
+    BASE_URL: process.env.BASE_URL || 'http://localhost:8000/'
+  },
   /*
   ** Axios module configuration
   ** See https://axios.nuxtjs.org/options
@@ -56,7 +61,8 @@ module.exports = {
     // proxy: true,
     proxyHeaders: false,
     credentials: false,
-    baseURL: 'http://localhost:8000'
+    baseURL: 'http://localhost:8000/'
+    // baseURL: 'http://192.168.122.1:8000'
   },
   /*
   ** vuetify module configuration
@@ -89,7 +95,7 @@ module.exports = {
     /*
     ** You can extend webpack config here
     */
-    extend (config, ctx) {
+    extend(config, ctx) {
     }
   }
 }
