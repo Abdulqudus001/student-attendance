@@ -1,6 +1,6 @@
 <template>
   <v-container grid-list-md>
-    <capture-image :show="captureImage" v-if="captureImage" @closeDialog="closeDialog" />
+    <capture-image v-if="captureImage" :show="captureImage" @closeDialog="closeDialog" />
     <v-layout wrap align-center>
       <v-flex xs12 sm5>
         <v-card class="student">
@@ -314,7 +314,7 @@ export default {
         images = imageArray.map((image) => {
           return {
             id: image.id,
-            url: `http://192.168.122.1:8000${image.file}`,
+            url: `${process.env.BASE_URL}${image.file}`,
           }
         })
         this.viewerImages = images

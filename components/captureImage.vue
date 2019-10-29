@@ -10,13 +10,13 @@
         </v-layout>
         <v-layout wrap>
           <v-flex>
-            <canvas ref="canvas" id="canvas"></canvas>
+            <canvas id="canvas" ref="canvas" />
           </v-flex>
         </v-layout>
         <v-layout wrap>
-          <v-flex v-for="(capture, index) in captures" :key="index">
+          <v-flex v-for="(image, index) in captures" :key="index">
             <v-card>
-              <img :src="capture" alt="" class="captured">
+              <img :src="image" alt="" class="captured">
               <v-card-actions>
                 <v-spacer />
                 <v-btn icon @click="deleteImage(index)">

@@ -51,7 +51,7 @@ module.exports = {
   ],
   // Environment variables
   env: {
-    BASE_URL: process.env.BASE_URL || 'http://localhost:8000/'
+    BASE_URL: process.env.BASE_URL || 'http://localhost:8000'
   },
   /*
   ** Axios module configuration

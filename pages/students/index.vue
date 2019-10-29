@@ -315,7 +315,7 @@ export default {
           })
           this.$axios.$get(`/students/${student.id}/images`).then((res) => {
             const images = res.map((image) => {
-              return `http://http://192.168.122.1:8000${image.file}`
+              return `${process.env.BASE_URL}${image.file}`
             })
             const newObj = { ...student, image: images[0], courses: [...courses] }
             updatedStudent.push(newObj)
