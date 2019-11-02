@@ -54,7 +54,7 @@
                     <img class="viewer" :src="src.url">
                     <v-card-actions>
                       <v-spacer />
-                      <v-btn icon @click="deleteImage(src.id)">
+                      <v-btn icon @click="showDeleteDialog(src)">
                         <v-icon>mdi-close</v-icon>
                       </v-btn>
                     </v-card-actions>
@@ -81,6 +81,7 @@
         </v-card>
       </v-flex>
     </v-layout>
+    <!-- Dialog to add image -->
     <v-dialog
       v-model="showImageDialog"
       persistent
@@ -130,7 +131,7 @@
         </v-card-text>
         <v-card-actions>
           <v-btn
-            color="error"
+            color="primary"
             @click="captureImage = true"
           >
             Start Capture
@@ -153,6 +154,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Dialog to add courses to students -->
     <v-dialog v-model="showAddCourseDialog" max-width="360px">
       <v-card>
         <v-card-title>Add Course</v-card-title>
@@ -161,7 +163,6 @@
             v-model="selectedCourses"
             :items="getCourseNames"
             chips
-            clearable
             label="Select courses"
             multiple
             solo
@@ -170,7 +171,6 @@
               <v-chip
                 v-bind="attrs"
                 :input-value="selected"
-                close
                 @click="select"
                 @click:close="remove(item)"
               >
@@ -198,6 +198,30 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Dialog to confirm image removal -->
+    <v-dialog v-model="deleteDialog" max-width="280">
+      <v-card>
+        <v-card-title>Are you sure you want to delete this image??</v-card-title>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue-grey"
+            text
+            @click="deleteDialog = false"
+          >
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="error"
+            text
+            @click="deleteImage(selectedImage.id)"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -220,7 +244,9 @@ export default {
     selectedCourses: [],
     showAlert: false,
     alertMessage: '',
-    captureImage: false
+    captureImage: false,
+    selectedImage: '',
+    deleteDialog: false
   }),
   computed: {
     ...mapState(['courses']),
@@ -291,8 +317,13 @@ export default {
         })
       })
     },
+    showDeleteDialog (image) {
+      this.deleteDialog = true
+      this.selectedImage = image
+    },
     deleteImage (id) {
       this.$axios.delete(`/images/${id}`).then((res) => {
+        this.deleteDialog = false
         this.fetchStudentImages()
       })
     },

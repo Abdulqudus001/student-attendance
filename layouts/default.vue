@@ -68,7 +68,7 @@
             <!-- <v-icon v-else>mdi-lightbulb-outline</v-icon> -->
           </v-btn>
         </template>
-        <span>Toggle Dark Mode</span>
+        <span>{{ $vuetify.theme.dark ? 'Turn on the lights' : 'Turn off the lights' }}</span>
       </v-tooltip>
       <!-- <v-btn
         icon
@@ -103,7 +103,7 @@
       :fixed="fixed"
       app
     >
-      <span>&copy; 2019</span>
+      <span>&copy; 2019 <b>Q && Deven</b></span>
     </v-footer>
   </v-app>
 </template>

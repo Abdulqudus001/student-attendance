@@ -6,11 +6,19 @@
       </v-alert>
       <v-card-text>
         <v-layout justify-center>
+          <!-- <video
+            ref="stream"
+            id="stream"
+            height="400"
+            width="400"
+            controls
+            autoplay
+          ></video> -->
           <img ref="stream" class="stream" crossorigin="Anonymous" src="http://192.168.122.1:8000/video" alt="">
         </v-layout>
         <v-layout wrap>
           <v-flex>
-            <canvas id="canvas" ref="canvas" />
+            <canvas id="canvas" ref="canvas" width="300" height="300" />
           </v-flex>
         </v-layout>
         <v-layout wrap>
@@ -68,11 +76,25 @@ export default {
     alertMessage: ''
   }),
   methods: {
+    startWebcam () {
+      navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia)
+      if (navigator.getUserMedia) {
+        navigator.getUserMedia({ video: true, audio: false }, (stream) => {
+          const video = document.querySelector('#stream')
+          video.srcObject = stream
+          // console.log(window.URL.createObjectURL(stream))
+        }, (err) => {
+          console.log(err)
+        })
+      }
+    },
     capture () {
+      this.captures = []
       const video = this.$refs.stream
       const canvas = this.$refs.canvas
       const ctx = canvas.getContext('2d')
-      ctx.drawImage(video, 0, 0, 150, 150)
+      console.log(canvas.width, canvas.height)
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
       const img = new Image()
       img.src = canvas.toDataURL()
       this.captures.push(img.src)
@@ -109,8 +131,8 @@ export default {
 <style lang="scss">
 .stream {
   margin: 10px auto;
-  // width: 300px;
-  // height: 300px;
+  width: 300px;
+  height: 300px;
 }
 #canvas {
   display: none;

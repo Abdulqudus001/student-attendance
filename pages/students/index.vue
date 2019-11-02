@@ -127,7 +127,7 @@
     </v-tooltip>
     <v-dialog v-model="deleteDialog" max-width="280">
       <v-card>
-        <v-card-title>Are you sure you want to delete this course??</v-card-title>
+        <v-card-title>Are you sure you want to delete this student??</v-card-title>
         <v-card-actions>
           <v-spacer />
           <v-btn
@@ -368,6 +368,7 @@ export default {
       margin: 0 auto;
       img {
         width: 100%;
+        height: 100%;
         border-radius: 50%;
       }
     }
