@@ -32,7 +32,8 @@ module.exports = {
   */
   plugins: [
     '~/plugins/vue-viewer',
-    '~/plugins/filters'
+    '~/plugins/filters',
+    '~/plugins/highcharts'
   ],
   /*
   ** Nuxt.js dev-modules

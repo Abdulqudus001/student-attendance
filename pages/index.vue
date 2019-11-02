@@ -80,6 +80,13 @@
                 </v-icon>
               </v-btn>
             </v-flex>
+            <v-flex sm4>
+              <v-btn @click="showCourse(course.id)">
+                <v-icon color="blue-grey">
+                  mdi-check
+                </v-icon>
+              </v-btn>
+            </v-flex>
           </v-layout>
         </v-card>
       </v-flex>
@@ -252,6 +259,9 @@ export default {
         this.deleteDialog = false
       })
     },
+    showCourse (id) {
+      this.$router.push(`/courses/${id}`)
+    }
   }
 }
 </script>
