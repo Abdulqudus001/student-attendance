@@ -9274,3 +9274,13 @@ yargs@^7.0.0:
     which-module "^1.0.0"
     y18n "^3.2.1"
     yargs-parser "^5.0.0"
+
+zepto-webpack@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/zepto-webpack/-/zepto-webpack-1.2.1.tgz#0726107748a90c96349f3076c015a06cc6222d5f"
+  integrity sha1-ByYQd0ipDJY0nzB2wBWgbMYiLV8=
+
+zepto@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/zepto/-/zepto-1.2.0.tgz#e127bd9e66fd846be5eab48c1394882f7c0e4f98"
+  integrity sha1-4Se9nmb9hGvl6rSME5SIL3wOT5g=

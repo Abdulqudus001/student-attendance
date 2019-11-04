@@ -137,6 +137,6 @@ export default {
     isDarkModeActive () {
       return this.$vuetify.theme.dark
     }
-  }
+  },
 }
 </script>

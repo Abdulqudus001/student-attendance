@@ -1,5 +1,5 @@
 const colors = require('vuetify/es5/util/colors').default
-
+const webpack = require('webpack')
 module.exports = {
   mode: 'universal',
   /*
@@ -15,6 +15,9 @@ module.exports = {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+    ],
+    script: [
+      { src: '/js/zepto.js', type: 'text/javascript', mode: 'client' }
     ]
   },
   /*
@@ -33,7 +36,8 @@ module.exports = {
   plugins: [
     '~/plugins/vue-viewer',
     '~/plugins/filters',
-    '~/plugins/highcharts'
+    '~/plugins/highcharts',
+    { src: '~/plugins/zepto', ssr: false }
   ],
   /*
   ** Nuxt.js dev-modules
@@ -52,7 +56,7 @@ module.exports = {
   ],
   // Environment variables
   env: {
-    BASE_URL: process.env.BASE_URL || 'http://localhost:8000'
+    BASE_URL: process.env.BASE_URL || 'http://192.168.122.1:8000'
   },
   /*
   ** Axios module configuration
@@ -62,8 +66,8 @@ module.exports = {
     // proxy: true,
     proxyHeaders: false,
     credentials: false,
-    baseURL: 'http://localhost:8000/'
-    // baseURL: 'http://192.168.122.1:8000'
+    // baseURL: 'http://localhost:8000/'
+    baseURL: 'http://192.168.122.1:8000'
   },
   /*
   ** vuetify module configuration
@@ -96,7 +100,7 @@ module.exports = {
     /*
     ** You can extend webpack config here
     */
-    extend (config, ctx) {
+    extend(config, ctx) {
     }
   }
 }
