@@ -30,7 +30,7 @@
                 >
                   <template v-slot:item.image="{ item }">
                     <v-avatar>
-                      12
+                      <img :src="item.image" alt="item.name">
                     </v-avatar>
                   </template>
                 </v-data-table>
@@ -40,7 +40,11 @@
           <v-flex sm7>
             <v-card>
               <v-card-title>
-                View past attendance record
+                <span>View past attendance record</span>
+                <v-spacer />
+                <v-btn icon @click="deleteLecture">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
               </v-card-title>
               <v-card-text>
                 <v-select
@@ -52,12 +56,15 @@
                 <v-data-table
                   :headers="lectureHeaders"
                   :items="getSelectedLectureData"
+                  :items-per-page="5"
                   class="elevation-1"
                 >
                   <template v-slot:item.attendance="{ item }">
                     <v-chip
                       :color="item.attendance ? 'info': 'error'"
-                    >{{ item.attendance ? 'Present' : 'Absent'}}</v-chip>
+                    >
+                      {{ item.attendance ? 'Present' : 'Absent' }}
+                    </v-chip>
                   </template>
                   <template v-slot:item.full_name="{ item }">
                     {{ item.full_name | capitalize }}
@@ -73,17 +80,25 @@
       <v-card>
         <v-card-text>
           <v-layout wrap>
+            <!-- <v-flex sm4>
+              <img ref="stream" class="stream" crossorigin="Anonymous" src="http://192.168.122.1:8000/video" alt="">
+            </v-flex> -->
             <v-flex sm12>
               <v-data-table
                 :headers="lectureHeaders"
                 :items="lectureData"
-                hide-default-footer
+                :items-per-page="5"
                 class="elevation-1"
               >
                 <template v-slot:item.attendance="{ item }">
                   <v-chip
                     :color="item.attendance ? 'info': 'error'"
-                  >{{ item.attendance ? 'Present' : 'Absent'}}</v-chip>
+                  >
+                    {{ item.attendance ? 'Present' : 'Absent' }}
+                  </v-chip>
+                </template>
+                <template v-slot:item.full_name="{ item }">
+                  {{ item.full_name | capitalize }}
                 </template>
               </v-data-table>
             </v-flex>
@@ -94,7 +109,7 @@
           <v-btn
             color="error"
             text
-            @click="endLecture"
+            @click="showEndLectureDialog = true"
           >
             Stop Attendance
           </v-btn>
@@ -116,6 +131,52 @@
       </template>
       <span>Start Attendance</span>
     </v-tooltip>
+    <v-dialog v-model="showEndLectureDialog" persistent max-width="280">
+      <v-card>
+        <v-card-title>Are you sure you want to end this attendance??</v-card-title>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue-grey"
+            text
+            @click="showEndLectureDialog = false"
+          >
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="error"
+            text
+            @click="endLecture"
+          >
+            End Now
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="showEndLectureDialog" persistent max-width="280">
+      <v-card>
+        <v-card-title>Are you sure you want to remove this lecture record??</v-card-title>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="blue-grey"
+            text
+            @click="showDeleteLectureDialog = false"
+          >
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="error"
+            text
+            @click="endLecture"
+          >
+            End Now
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -191,7 +252,7 @@ export default {
         },
         {
           text: '% Present',
-          value: 'present',
+          value: 'attendanceRate',
           sortable: false
         }
       ],
@@ -199,7 +260,7 @@ export default {
         {
           image: 159,
           name: 'Frozen Yogurt',
-          present: 24
+          attendanceRate: 24
         },
         {
           image: 237,
@@ -250,7 +311,10 @@ export default {
       courseLectures: [],
       selectedLecture: 0,
       lectureModel: 'Lecture 1',
-      lectures: [0, 1, 2, 3, 4]
+      lectures: [0, 1, 2, 3, 4],
+      showEndLectureDialog: false,
+      selectedLectureID: 0,
+      showDeleteLectureDialog: false
     }
   },
   computed: {
@@ -261,7 +325,7 @@ export default {
     getSelectedLectureData () {
       let selectedLecture = []
       if (this.courseLectures.length > 0) {
-        selectedLecture = this.courseLectures[this.selectedLecture].attendanceRecord
+        selectedLecture = this.courseLectures[this.selectedLecture] ? this.courseLectures[this.selectedLecture].attendanceRecord : []
         // Function is called from here to enable auto update immediately data comes in
         this.generateChartData(this.courseLectures)
         // Get student with images data
@@ -278,8 +342,10 @@ export default {
   methods: {
     changeLecture (e) {
       this.selectedLecture = parseInt((e.split(' ')[1]) - 1)
+      this.selectedLectureID = this.courseLectures[this.selectedLecture].lectureID
     },
     getLectures () {
+      this.courseLectures = []
       this.$axios.get(`/courses/${this.$route.params.id}/lectures/`).then((success) => {
         const lectures = success.data.map((data, index) => {
           return `Lecture ${index + 1}`
@@ -302,6 +368,7 @@ export default {
             this.courseLectures.sort((a, b) => {
               return a.lectureID - b.lectureID
             })
+            this.selectedLectureID = this.courseLectures[0].lectureID
           }).catch((err) => {
             console.log(err)
           })
@@ -327,6 +394,12 @@ export default {
         })
         this.lectureData = this.registeredStudents
         this.getLectures()
+      })
+    },
+    deleteLecture () {
+      this.$axios.delete(`/lectures/${this.selectedLectureID}/`).then((success) => {
+        this.getCourses()
+        this.changeLecture('Lecture 1')
       })
     },
     updateColorScheme () {
@@ -362,6 +435,8 @@ export default {
         id: this.lectureID
       }).then((success) => {
         this.websocket.close()
+        this.showEndLectureDialog = false
+        this.getCourses()
       }).catch((err) => {
         console.log(err)
       })
@@ -400,7 +475,7 @@ export default {
     generateChartData (lectureData) {
       // console.log(lectureData)
       const categories = lectureData.map((lecture, index) => {
-        return `Lecture ${index + 1}`
+        return `Wk ${index + 1}`
       })
       const attendanceHistory = lectureData.map((lecture, index) => {
         const presentStudents = lecture.attendanceRecord.filter((record) => {
@@ -415,19 +490,20 @@ export default {
     },
     getStudentImages (lectureData, students) {
       // Get individual student courses and images
-      // const updatedStudent = []
-      console.log(students)
-      // students.forEach((student) => {
-      //   this.$axios.$get(`/students/${student.id}/images`).then((res) => {
-      //     const images = res.map((image) => {
-      //       return `${process.env.BASE_URL}${image.file}`
-      //     })
-      //     const newObj = { ...student, image: images[0] }
-      //     updatedStudent.push(newObj)
-      //     this.registeredStudents = updatedStudent
-      //     // console.log(this.getStudentAttendanceRate(lectureData, this.registeredStudents))
-      //   })
-      // })
+      const updatedStudent = []
+      students.forEach((student) => {
+        this.$axios.$get(`/students/${student.id}/images`).then((res) => {
+          const images = res.map((image) => {
+            return `${process.env.BASE_URL}${image.file}`
+          })
+          const newObj = { ...student, image: images[0] }
+          updatedStudent.push(newObj)
+          this.tableData = this.getStudentAttendanceRate(lectureData, updatedStudent).sort((a, b) => {
+            return b.attendanceRate - a.attendanceRate
+          })
+          this.tableData = this.tableData.slice(0, 5)
+        })
+      })
     },
     getStudentAttendanceRate (lectureData, students) {
       const studentsAttendanceRate = students.map((student) => {
@@ -440,7 +516,7 @@ export default {
         return {
           name: student.full_name,
           image: student.image,
-          attendanceRate: attendanceHistory.reduce((acc, a) => acc + a)
+          attendanceRate: ((attendanceHistory.reduce((acc, a) => acc + a) / lectureData.length) * 100).toFixed(1)
         }
       })
       return studentsAttendanceRate

@@ -70,7 +70,7 @@
                   right
                   bottom
                   v-on="on"
-                  @click="showImageDialog = true"
+                  @click="showImageDialog = true; showAlert = false"
                 >
                   <v-icon>mdi-plus</v-icon>
                 </v-btn>
@@ -89,7 +89,13 @@
     >
       <v-card>
         <v-alert v-model="showAlert" color="error">
-          {{ alertMessage }}
+          <v-layout align-center>
+            {{ alertMessage }}
+            <v-spacer />
+            <v-btn icon @click="showAlert = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-layout>
         </v-alert>
         <v-card-title class="headline" />
         <v-card-text>
@@ -99,13 +105,13 @@
           <v-file-input
             v-model="images"
             accept="image/*;capture=camera"
-            color="deep-purple accent-4"
             counter
             label="Image"
             multiple
             placeholder="Add image(s)"
             prepend-icon="mdi-camera"
             outlined
+            :color="imageSize > 200000 ? 'red' : 'deep-purple accent-4'"
             :show-size="1000"
             @change="showImage"
           >
@@ -128,6 +134,9 @@
               </span>
             </template>
           </v-file-input>
+          <p v-show="imageSize > 200000" class="error-txt">
+            Image size exceeds 200KB
+          </p>
         </v-card-text>
         <v-card-actions>
           <v-btn
@@ -139,14 +148,14 @@
           <v-spacer />
           <v-btn
             color="error"
-            @click="showImageDialog = false"
+            @click="showImageDialog = false; showAlert = false"
           >
             Cancel
           </v-btn>
 
           <v-btn
             color="blue-grey"
-            :disabled="isFormValid"
+            :disabled="isFormInvalid"
             @click="addImage"
           >
             Save
@@ -246,13 +255,14 @@ export default {
     alertMessage: '',
     captureImage: false,
     selectedImage: '',
-    deleteDialog: false
+    deleteDialog: false,
+    imageSize: 0
   }),
   computed: {
     ...mapState(['courses']),
     ...mapGetters(['getCourseNames']),
-    isFormValid () {
-      if (this.imagesToBeUploaded.length > 0) {
+    isFormInvalid () {
+      if (this.imagesToBeUploaded.length > 0 && this.imageSize < 200000) {
         return false
       } else {
         return true
@@ -274,6 +284,7 @@ export default {
       // Close dialog for image capture
       this.captureImage = false
       this.showImageDialog = false
+      this.showAlert = false
       this.fetchStudentImages()
     },
     async fetchStudent () {
@@ -311,6 +322,7 @@ export default {
           // Fetch students list after update
           this.fetchStudentImages()
           this.showImageDialog = false
+          this.showAlert = false
         }).catch((err) => {
           this.showAlert = true
           this.alertMessage = err.response.data[Object.keys(err.response.data)[0]]
@@ -328,6 +340,10 @@ export default {
       })
     },
     showImage (imageArray) {
+      const imageSize = imageArray.reduce((acc, image) => {
+        return acc + image.size
+      }, 0)
+      this.imageSize = imageSize
       const images = []
       imageArray.forEach((image) => {
         const reader = new FileReader()
@@ -414,5 +430,10 @@ export default {
     // width: 150px;
     height: 120px;
     margin: 10px auto;
+  }
+  .error-txt {
+    font-size: 0.8rem;
+    color: #ee1717;
+    margin: -20px 0 0 30px;
   }
 </style>

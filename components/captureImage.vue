@@ -14,7 +14,14 @@
             controls
             autoplay
           ></video> -->
-          <img ref="stream" class="stream" crossorigin="Anonymous" src="http://192.168.122.1:8000/video" alt="">
+          <img
+            v-if="isCapturing"
+            ref="stream"
+            class="stream"
+            crossorigin="Anonymous"
+            src="http://192.168.122.1:8000/video"
+            alt=""
+          >
         </v-layout>
         <v-layout wrap>
           <v-flex>
@@ -39,7 +46,7 @@
         <v-spacer />
         <v-btn
           color="error"
-          @click="$emit('closeDialog')"
+          @click="endCapture"
         >
           Cancel
         </v-btn>
@@ -73,8 +80,12 @@ export default {
     canvas: [],
     captures: [],
     showAlert: false,
-    alertMessage: ''
+    alertMessage: '',
+    isCapturing: true
   }),
+  mounted () {
+    this.captures = []
+  },
   methods: {
     startWebcam () {
       navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia)
@@ -89,11 +100,9 @@ export default {
       }
     },
     capture () {
-      this.captures = []
       const video = this.$refs.stream
       const canvas = this.$refs.canvas
       const ctx = canvas.getContext('2d')
-      console.log(canvas.width, canvas.height)
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
       const img = new Image()
       img.src = canvas.toDataURL()
@@ -104,6 +113,9 @@ export default {
     },
     addImage () {
       const id = this.$route.params.id
+      this.$axios.post('http://192.168.122.1:8000/video').then((success) => {
+        console.log(success)
+      })
       // Loop through added images
       this.captures.forEach((image) => {
         // Create new formData to handle image upload
@@ -116,7 +128,6 @@ export default {
           this.$axios.post(`/images/`, form, { headers: {
             'content-type': 'multipart/form-data'
           } }).then((res) => {
-            this.$emit('closeDialog')
           }).catch((err) => {
             this.showAlert = true
             this.alertMessage = err.response.data[Object.keys(err.response.data)[0]]
@@ -124,6 +135,15 @@ export default {
         })
       })
     },
+    endCapture () {
+      this.$emit('closeDialog')
+      this.isCapturing = false
+      // const video = this.$refs.stream
+      // video.src = ''
+      this.$axios.post('http://192.168.122.1:8000/video').then((success) => {
+        console.log(success)
+      })
+    }
   }
 }
 </script>

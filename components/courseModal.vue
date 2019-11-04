@@ -3,7 +3,7 @@
     <v-dialog
       v-model="show"
       persistent
-      max-width="360"
+      max-width="560"
     >
       <v-card>
         <v-card-title class="headline">
