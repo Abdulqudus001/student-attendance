@@ -16,74 +16,83 @@
       </v-flex>
       <v-flex sm12>
         <v-layout wrap>
-          <v-flex sm5>
+          <v-flex sm12>
             <v-card>
               <v-card-title>
-                Top 5 regular students
-              </v-card-title>
-              <v-card-text>
-                <v-data-table
-                  :headers="headers"
-                  :items="tableData"
-                  hide-default-footer
-                  class="elevation-1"
-                >
-                  <template v-slot:item.image="{ item }">
-                    <v-avatar>
-                      <img :src="item.image" alt="item.name">
-                    </v-avatar>
-                  </template>
-                </v-data-table>
-              </v-card-text>
-            </v-card>
-          </v-flex>
-          <v-flex sm7>
-            <v-card>
-              <v-card-title>
-                <span>View past attendance record</span>
+                <span>Previous Lecture Records</span>
                 <v-spacer />
-                <v-btn icon @click="deleteLecture">
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
-              </v-card-title>
-              <v-card-text>
                 <v-select
                   v-model="lectureModel"
                   :items="lectures"
                   label="Lectures"
                   @change="changeLecture"
                 />
-                <v-data-table
-                  :headers="lectureHeaders"
-                  :items="getSelectedLectureData"
-                  :items-per-page="5"
-                  class="elevation-1"
-                >
-                  <template v-slot:item.attendance="{ item }">
-                    <v-chip
-                      :color="item.attendance ? 'info': 'error'"
+                <v-btn icon @click="deleteLecture">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text>
+                <v-layout>
+                  <v-flex sm5>
+                    <highcharts :options="mainDashboardPieData" />
+                  </v-flex>
+                  <v-flex sm7>
+                    <v-data-table
+                      :headers="lectureHeaders"
+                      :items="getSelectedLectureData"
+                      :items-per-page="6"
+                      class="elevation-1"
                     >
-                      {{ item.attendance ? 'Present' : 'Absent' }}
-                    </v-chip>
-                  </template>
-                  <template v-slot:item.full_name="{ item }">
-                    {{ item.full_name | capitalize }}
-                  </template>
-                </v-data-table>
+                      <template v-slot:item.attendance="{ item }">
+                        <v-chip
+                          :color="item.attendance ? 'info': 'error'"
+                        >
+                          {{ item.attendance ? 'Present' : 'Absent' }}
+                        </v-chip>
+                      </template>
+                      <template v-slot:item.full_name="{ item }">
+                        {{ item.full_name | capitalize }}
+                      </template>
+                    </v-data-table>
+                  </v-flex>
+                </v-layout>
               </v-card-text>
             </v-card>
           </v-flex>
         </v-layout>
+      </v-flex>
+      <v-flex sm12>
+        <v-card>
+          <v-card-title>
+            Attendance Overview
+          </v-card-title>
+          <v-card-text>
+            <v-data-table
+              :headers="headers"
+              :items="tableData"
+              class="elevation-1"
+            >
+              <template v-slot:item.image="{ item }">
+                <v-avatar>
+                  <img :src="item.image" :alt="item.name">
+                </v-avatar>
+              </template>
+              <template v-slot:item.name="{ item }">
+                {{ item.name | capitalize }}
+              </template>
+            </v-data-table>
+          </v-card-text>
+        </v-card>
       </v-flex>
     </v-layout>
     <v-dialog v-model="showLectureModal" max-width="800" persistent>
       <v-card>
         <v-card-text>
           <v-layout wrap>
-            <!-- <v-flex sm4>
-              <img ref="stream" class="stream" crossorigin="Anonymous" src="http://192.168.122.1:8000/video" alt="">
-            </v-flex> -->
-            <v-flex sm12>
+            <v-flex sm5>
+              <highcharts :options="pieData" />
+            </v-flex>
+            <v-flex sm7>
               <v-data-table
                 :headers="lectureHeaders"
                 :items="lectureData"
@@ -120,7 +129,7 @@
       <template v-slot:activator="{ on }">
         <v-btn
           fab
-          absolute
+          fixed
           right
           bottom
           v-on="on"
@@ -184,6 +193,103 @@
 export default {
   data () {
     return {
+      pieData: {
+        chart: {
+          backgroundColor: this.getBGColor,
+          type: 'pie'
+        },
+        title: {
+          text: 'Student Emotions Chart',
+          style: {
+            color: '#fff'
+          }
+        },
+        tooltip: {
+          pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+          pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+              enabled: true,
+              format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+            }
+          }
+        },
+        series: [{
+          name: 'Emotion',
+          colorByPoint: true,
+          data: [
+            {
+              name: 'calm',
+              y: 0
+            },
+            {
+              name: 'surprise',
+              y: 0
+            },
+            {
+              name: 'anger',
+              y: 0
+            },
+            {
+              name: 'fear',
+              y: 0
+            }
+          ]
+        }]
+      },
+      mainDashboardPieData: {
+        chart: {
+          backgroundColor: this.getBGColor,
+          type: 'pie'
+        },
+        title: {
+          text: 'Emotions',
+          style: {
+            color: '#fff'
+          }
+        },
+        tooltip: {
+          pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        // plotOptions: {
+        //   pie: {
+        //     allowPointSelect: true,
+        //     cursor: 'pointer',
+        //     // dataLabels: {
+        //     //   enabled: true,
+        //     //   format: '{point.name}: {point.percentage:.1f} %'
+        //     // }
+        //   }
+        // },
+        series: [{
+          name: 'Emotions',
+          colorByPoint: true,
+          data: [
+            {
+              name: 'calm',
+              color: '#2196f3',
+              y: 0,
+            },
+            {
+              name: 'surprise',
+              color: '#607d8b',
+              y: 0
+            },
+            {
+              name: 'anger',
+              color: '#f04d50',
+              y: 0
+            },
+            {
+              name: 'fear',
+              y: 0
+            }
+          ]
+        }]
+      },
       chartOptions: {
         chart: {
           type: 'line',
@@ -248,6 +354,11 @@ export default {
         {
           text: 'Name',
           value: 'name',
+          sortable: false
+        },
+        {
+          text: 'No of classes attended',
+          value: 'classes',
           sortable: false
         },
         {
@@ -343,6 +454,8 @@ export default {
     changeLecture (e) {
       this.selectedLecture = parseInt((e.split(' ')[1]) - 1)
       this.selectedLectureID = this.courseLectures[this.selectedLecture].lectureID
+      this.mainDashboardPieData.series[0].data = this.courseLectures[this.selectedLecture].emotions
+      this.mainDashboardPieData.title.text = `Emotions for ${this.lectureModel}`
     },
     getLectures () {
       this.courseLectures = []
@@ -357,6 +470,7 @@ export default {
         sorted.forEach((data) => {
           this.$axios.get(`/lectures/${data.id}/`).then((success) => {
             const data = success.data
+            const emotions = this.getPieChartData(data.emotions)
             const studentAttendance = this.registeredStudents.map((stu) => {
               if (data.students_present.includes(stu.id)) {
                 return { ...stu, attendance: true }
@@ -364,11 +478,13 @@ export default {
                 return { ...stu, attendance: false }
               }
             })
-            this.courseLectures.push({ lectureID: data.id, attendanceRecord: studentAttendance })
+            this.courseLectures.push({ lectureID: data.id, attendanceRecord: studentAttendance, emotions })
             this.courseLectures.sort((a, b) => {
               return a.lectureID - b.lectureID
             })
             this.selectedLectureID = this.courseLectures[0].lectureID
+            this.mainDashboardPieData.series[0].data = this.courseLectures[0].emotions
+            this.mainDashboardPieData.title.text = `Emotions for ${this.lectureModel}`
           }).catch((err) => {
             console.log(err)
           })
@@ -410,6 +526,8 @@ export default {
         this.chartOptions.xAxis.labels.style.color = '#fff'
         this.chartOptions.title.style.color = '#fff'
         this.chartOptions.legend.itemStyle.color = '#fff'
+        this.pieData.title.style.color = '#fff'
+        this.mainDashboardPieData.title.style.color = '#fff'
       } else if (!this.$vuetify.theme.dark && this.chartOptions) {
         this.chartOptions.yAxis.title.style.color = '#333'
         this.chartOptions.yAxis.labels.style.color = '#333'
@@ -417,6 +535,8 @@ export default {
         this.chartOptions.xAxis.labels.style.color = '#333'
         this.chartOptions.title.style.color = '#333'
         this.chartOptions.legend.itemStyle.color = '#333'
+        this.pieData.title.style.color = '#333'
+        this.mainDashboardPieData.title.style.color = '#333'
       }
     },
     startLecture () {
@@ -455,11 +575,44 @@ export default {
       this.websocket.onmessage = function (evt) {
         console.log('New Face Captured')
         const presentStudents = JSON.parse(evt.data).students_present
+        that.getPieChartData(JSON.parse(evt.data).emotions)
         that.markAttendance(presentStudents)
       }
       this.websocket.onerror = function (evt) {
         console.log(evt)
       }
+    },
+    // Generate pie chart data
+    getPieChartData (data) {
+      const pieData = [
+        {
+          name: 'calm',
+          y: 0
+        },
+        {
+          name: 'surprise',
+          y: 0
+        },
+        {
+          name: 'anger',
+          y: 0
+        },
+        {
+          name: 'fear',
+          y: 0
+        }
+      ]
+      if (data.length === 0) {
+        return pieData
+      }
+      pieData.forEach((pie, index) => {
+        const chartData = data.filter((item) => {
+          return item === pie.name
+        })
+        pie.y = chartData.length
+      })
+      this.pieData.series[0].data = pieData
+      return pieData
     },
     markAttendance (presentStudents) {
       const lectureData = this.lectureData.map((data) => {
@@ -501,10 +654,11 @@ export default {
           this.tableData = this.getStudentAttendanceRate(lectureData, updatedStudent).sort((a, b) => {
             return b.attendanceRate - a.attendanceRate
           })
-          this.tableData = this.tableData.slice(0, 5)
+          // this.tableData = this.tableData.slice(0, 3)
         })
       })
     },
+    // Computed data for general lecture statistics
     getStudentAttendanceRate (lectureData, students) {
       const studentsAttendanceRate = students.map((student) => {
         const attendanceHistory = lectureData.map((lecture, index) => {
@@ -516,6 +670,7 @@ export default {
         return {
           name: student.full_name,
           image: student.image,
+          classes: attendanceHistory.reduce((acc, a) => acc + a),
           attendanceRate: ((attendanceHistory.reduce((acc, a) => acc + a) / lectureData.length) * 100).toFixed(1)
         }
       })

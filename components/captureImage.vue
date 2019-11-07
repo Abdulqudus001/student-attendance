@@ -81,7 +81,8 @@ export default {
     captures: [],
     showAlert: false,
     alertMessage: '',
-    isCapturing: true
+    isCapturing: true,
+    showLoader: false
   }),
   mounted () {
     this.captures = []
@@ -121,6 +122,7 @@ export default {
         // Create new formData to handle image upload
         const form = new FormData()
         fetch(image).then(res => res.blob()).then((blob) => {
+          this.$emit('showLoader', true)
           // Create a new file from base64 image
           const file = new File([blob], 'image.jpeg')
           form.append('file', file, file.name)
@@ -128,11 +130,14 @@ export default {
           this.$axios.post(`/images/`, form, { headers: {
             'content-type': 'multipart/form-data'
           } }).then((res) => {
+            this.$emit('showLoader', false)
           }).catch((err) => {
+            this.$emit('showLoader', false)
             this.showAlert = true
             this.alertMessage = err.response.data[Object.keys(err.response.data)[0]]
           })
         })
+        this.endCapture()
       })
     },
     endCapture () {

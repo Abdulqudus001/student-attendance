@@ -1,6 +1,7 @@
 <template>
   <v-container grid-list-md>
-    <capture-image v-if="captureImage" :show="captureImage" @closeDialog="closeDialog" />
+    <custom-loader v-show="showLoader" />
+    <capture-image v-show="captureImage" :show="captureImage" @closeDialog="closeDialog" @showLoader="handleLoaderDisplay" />
     <v-layout wrap align-center>
       <v-flex xs12 sm5>
         <v-card class="student">
@@ -38,7 +39,7 @@
         </v-card>
       </v-flex>
       <v-flex xs12 sm7>
-        <v-card>
+        <v-card max-height="470px" height="470px" class="student-images">
           <v-card-title>
             Registered Images
           </v-card-title>
@@ -66,7 +67,7 @@
               <template v-slot:activator="{ on }">
                 <v-btn
                   fab
-                  absolute
+                  fixed
                   right
                   bottom
                   v-on="on"
@@ -237,8 +238,9 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import CaptureImage from '@/components/captureImage'
+import CustomLoader from '~/components/loader.vue'
 export default {
-  components: { CaptureImage },
+  components: { CaptureImage, CustomLoader },
   data: () => ({
     student: {},
     studentCourses: [],
@@ -256,7 +258,8 @@ export default {
     captureImage: false,
     selectedImage: '',
     deleteDialog: false,
-    imageSize: 0
+    imageSize: 0,
+    showLoader: false
   }),
   computed: {
     ...mapState(['courses']),
@@ -280,6 +283,10 @@ export default {
     this.fetchStudentImages()
   },
   methods: {
+    handleLoaderDisplay (e) {
+      console.log(e)
+      this.showLoader = e
+    },
     closeDialog () {
       // Close dialog for image capture
       this.captureImage = false
@@ -288,9 +295,11 @@ export default {
       this.fetchStudentImages()
     },
     async fetchStudent () {
+      this.showLoader = true
       const id = this.$route.params.id
       const student = await this.$axios.$get(`${this.url}/${id}`)
       this.student = student
+      this.showLoader = false
     },
     async fetchStudentCourses () {
       const id = this.$route.params.id
@@ -402,6 +411,9 @@ export default {
 </script>
 
 <style lang="scss">
+  .student-images {
+    overflow-y: auto;
+  }
   .student {
     padding: 10px 0;
     text-align: center;
