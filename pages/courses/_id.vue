@@ -529,6 +529,7 @@ export default {
         })
         this.getStudents(selectedCourse.registered_students)
       }).catch((err) => {
+        console.log(err)
         this.showLoader = false
       })
     },
