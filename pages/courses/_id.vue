@@ -94,7 +94,7 @@
               <highcharts :options="pieData" />
             </v-flex>
             <v-flex sm7>
-              <p class="title">
+              <p class="title">00
                 Student Attendance
               </p>
               <v-data-table
@@ -512,6 +512,7 @@ export default {
             this.mainDashboardPieData.title.text = `Emotions for ${this.lectureModel}`
             this.showLoader = false
           }).catch((err) => {
+            this.showLoader = false
             console.log(err)
           })
         })
@@ -527,6 +528,8 @@ export default {
           return course.id.toString() === this.$route.params.id.toString()
         })
         this.getStudents(selectedCourse.registered_students)
+      }).catch((err) => {
+        this.showLoader = false
       })
     },
     getStudents (registeredStudents) {
