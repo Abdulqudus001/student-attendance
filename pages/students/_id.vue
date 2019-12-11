@@ -1,7 +1,13 @@
 <template>
   <v-container grid-list-md>
     <custom-loader v-show="showLoader" />
-    <capture-image v-show="captureImage" :show="captureImage" @closeDialog="closeDialog" @showLoader="handleLoaderDisplay" />
+    <capture-image
+      v-show="captureImage"
+      :show="captureImage"
+      @closeDialog="closeDialog"
+      @showLoader="handleLoaderDisplay"
+      @imageSent="updatePage"
+    />
     <v-layout wrap align-center>
       <v-flex xs12 sm5>
         <v-card class="student">
@@ -283,8 +289,13 @@ export default {
     this.fetchStudentImages()
   },
   methods: {
+    updatePage () {
+      this.fetchStudent()
+      this.fetchStudentCourses()
+      this.fetchCourses()
+      this.fetchStudentImages()
+    },
     handleLoaderDisplay (e) {
-      console.log(e)
       this.showLoader = e
     },
     closeDialog () {
@@ -294,33 +305,44 @@ export default {
       this.showAlert = false
       this.fetchStudentImages()
     },
-    async fetchStudent () {
+    fetchStudent () {
       this.showLoader = true
       const id = this.$route.params.id
-      const student = await this.$axios.$get(`${this.url}/${id}`)
-      this.student = student
-      this.showLoader = false
+      this.$axios.$get(`${this.url}/${id}`).then((students) => {
+        this.student = students
+        this.showLoader = false
+      })
     },
-    async fetchStudentCourses () {
+    fetchStudentCourses () {
+      this.showLoader = true
       const id = this.$route.params.id
-      const courses = await this.$axios.$get(`${this.url}/${id}/courses`)
-      this.studentCourses = courses
-      this.selectedCourses = this.extractCourseNames(courses)
+      this.$axios.$get(`${this.url}/${id}/courses`).then((courses) => {
+        this.studentCourses = courses
+        this.selectedCourses = this.extractCourseNames(courses)
+        this.showLoader = false
+      })
     },
-    async fetchCourses () {
-      const courses = await this.$axios.$get('/courses/')
-      this.$store.dispatch('updateCourses', courses)
-      this.allCourses = courses
+    fetchCourses () {
+      this.showLoader = true
+      this.$axios.$get('/courses/').then((courses) => {
+        this.$store.dispatch('updateCourses', courses)
+        this.allCourses = courses.data
+        this.showLoader = false
+      })
     },
-    async fetchStudentImages () {
+    fetchStudentImages () {
+      this.showLoader = true
       const id = this.$route.params.id
-      const images = await this.$axios.$get(`${this.url}/${id}/images`)
-      this.showStudentImages(images)
+      this.$axios.$get(`${this.url}/${id}/images`).then((images) => {
+        this.showStudentImages(images)
+        this.showLoader = false
+      })
     },
     addImage () {
       const id = this.$route.params.id
       // Loop through added images
       this.imagesToBeUploaded.forEach((image) => {
+        this.showLoader = true
         // Create new formData to handle image upload
         const form = new FormData()
         form.append('file', image, image.name)
@@ -328,6 +350,7 @@ export default {
         this.$axios.post(`/images/`, form, { headers: {
           'content-type': 'multipart/form-data'
         } }).then((res) => {
+          this.showLoader = false
           // Fetch students list after update
           this.fetchStudentImages()
           this.showImageDialog = false
@@ -387,6 +410,7 @@ export default {
       selectedCourses.forEach(this.addCourse)
     },
     addCourse (course) {
+      this.showLoader = true
       this.$axios.put(`/courses/${course.id}/`, {
         department: course.department,
         name: course.name,

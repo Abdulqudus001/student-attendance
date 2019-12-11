@@ -7,6 +7,7 @@
       @hideDialog="hideDialog"
       @savedStudent="fetchStudents"
     />
+    <custom-loader v-show="showLoader" />
     <v-card class="search-options">
       <v-layout wrap align-center justify-center>
         <v-flex sm4>
@@ -154,8 +155,9 @@
 <script>
 import { mapGetters } from 'vuex'
 import StudentModal from '@/components/studentModal.vue'
+import CustomLoader from '~/components/loader.vue'
 export default {
-  components: { StudentModal },
+  components: { StudentModal, CustomLoader },
   data: () => ({
     studentId: '',
     studentName: '',
@@ -212,7 +214,8 @@ export default {
     currentStudent: {},
     filteredList: [],
     selectedStudent: '',
-    deleteDialog: false
+    deleteDialog: false,
+    showLoader: false
   }),
   computed: {
     ...mapGetters(['getCourseNames']),
@@ -255,7 +258,9 @@ export default {
   mounted () {
     if (this.$store.state.students.length > 0) {
       this.students = [...this.$store.state.students]
-      this.filteredList = this.students
+      this.filteredList = this.students.sort((a, b) => {
+        return a.full_name - b.full_name
+      })
       this.fetchStudentCoursesAndImages()
       // this.fetchStudentImages()
       this.$store.dispatch('updateStudent', this.students)
@@ -272,43 +277,50 @@ export default {
       const filteredList = this.students.filter((student) => {
         return student.full_name.toLowerCase().includes(this.studentName.toLowerCase())
       })
-      this.filteredList = filteredList
+      this.filteredList = filteredList.sort((a, b) => {
+        return a.full_name - b.full_name
+      })
     },
     filterById () {
       const filteredList = this.students.filter((student) => {
         return student.matric_no.toLowerCase().includes(this.studentId.toLowerCase())
       })
-      this.filteredList = filteredList
+      this.filteredList = filteredList.sort((a, b) => {
+        return a.full_name - b.full_name
+      })
     },
     filterByCourse () {
       this.filteredList = this.students
       const filteredList = this.students.filter((student) => {
         return student.courses.includes(this.course)
       })
-      this.filteredList = filteredList
+      this.filteredList = filteredList.sort((a, b) => {
+        return a.full_name - b.full_name
+      })
     },
     async fetchCourses () {
       const courses = await this.$axios.$get(`courses/`)
       this.$store.dispatch('updateCourses', courses)
     },
     fetchStudents () {
+      this.showLoader = true
       this.$axios.$get('/students/').then((res) => {
         // Dispatch students without courses list to store
         this.$store.dispatch('updateStudent', res)
         this.students = res
-        this.filteredList = this.students
-        // Get students with courses list and dispatch to store
+        // this.filteredList = this.students.sort((a, b) => {
+        //   return a.full_name - b.full_name
+        // })
+        // Get students with courses list with images and dispatch to store
         this.fetchStudentCoursesAndImages()
         this.$store.dispatch('updateStudent', this.students)
-        // Get student with profile photo and dispatch to store
-        // this.fetchStudentImages()
-        // this.$store.dispatch('updateStudent', this.students)
       })
     },
     fetchStudentCoursesAndImages () {
       // Get individual student courses and images
       const updatedStudent = []
       this.students.forEach((student) => {
+        this.showLoader = true
         this.$axios.$get(`/students/${student.id}/courses`).then((res) => {
           const courses = res.map((course) => {
             return `${course.department}${course.code}`
@@ -320,7 +332,10 @@ export default {
             const newObj = { ...student, image: images[0], courses: [...courses] }
             updatedStudent.push(newObj)
             this.students = updatedStudent
-            this.filteredList = this.students
+            this.filteredList = this.students.sort((a, b) => {
+              return a.full_name - b.full_name
+            })
+            this.showLoader = false
           })
         })
       })

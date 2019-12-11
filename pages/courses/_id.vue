@@ -3,6 +3,7 @@
     <div hidden>
       {{ getBGColor }}
     </div>
+    <custom-loader v-show="showLoader" />
     <v-layout wrap>
       <v-flex sm12>
         <v-card>
@@ -85,7 +86,7 @@
         </v-card>
       </v-flex>
     </v-layout>
-    <v-dialog v-model="showLectureModal" max-width="800" persistent>
+    <v-dialog v-model="showLectureModal" max-width="900" persistent>
       <v-card>
         <v-card-text>
           <v-layout wrap>
@@ -93,6 +94,9 @@
               <highcharts :options="pieData" />
             </v-flex>
             <v-flex sm7>
+              <p class="title">
+                Student Attendance
+              </p>
               <v-data-table
                 :headers="lectureHeaders"
                 :items="lectureData"
@@ -190,7 +194,9 @@
 </template>
 
 <script>
+import CustomLoader from '~/components/loader.vue'
 export default {
+  components: { CustomLoader },
   data () {
     return {
       pieData: {
@@ -204,15 +210,22 @@ export default {
             color: '#fff'
           }
         },
+        credits: {
+          enabled: false
+        },
+        legend: {
+          enabled: true
+        },
         tooltip: {
           pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
         },
         plotOptions: {
           pie: {
             allowPointSelect: true,
+            minSize: 80,
             cursor: 'pointer',
             dataLabels: {
-              enabled: true,
+              enabled: false,
               format: '<b>{point.name}</b>: {point.percentage:.1f} %'
             }
           }
@@ -251,19 +264,29 @@ export default {
             color: '#fff'
           }
         },
+        credits: {
+          enabled: false
+        },
+        legend: {
+          enabled: true
+        },
         tooltip: {
           pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
         },
-        // plotOptions: {
-        //   pie: {
-        //     allowPointSelect: true,
-        //     cursor: 'pointer',
-        //     // dataLabels: {
-        //     //   enabled: true,
-        //     //   format: '{point.name}: {point.percentage:.1f} %'
-        //     // }
-        //   }
-        // },
+        plotOptions: {
+          pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            minSize: 80,
+            dataLabels: {
+              enabled: false,
+              format: '{point.name}: {point.percentage:.1f} %',
+              style: {
+                color: '#fff'
+              }
+            }
+          }
+        },
         series: [{
           name: 'Emotions',
           colorByPoint: true,
@@ -425,7 +448,8 @@ export default {
       lectures: [0, 1, 2, 3, 4],
       showEndLectureDialog: false,
       selectedLectureID: 0,
-      showDeleteLectureDialog: false
+      showDeleteLectureDialog: false,
+      showLoader: false
     }
   },
   computed: {
@@ -468,6 +492,7 @@ export default {
           return a.id - b.id
         })
         sorted.forEach((data) => {
+          this.showLoader = true
           this.$axios.get(`/lectures/${data.id}/`).then((success) => {
             const data = success.data
             const emotions = this.getPieChartData(data.emotions)
@@ -485,6 +510,7 @@ export default {
             this.selectedLectureID = this.courseLectures[0].lectureID
             this.mainDashboardPieData.series[0].data = this.courseLectures[0].emotions
             this.mainDashboardPieData.title.text = `Emotions for ${this.lectureModel}`
+            this.showLoader = false
           }).catch((err) => {
             console.log(err)
           })
@@ -494,6 +520,7 @@ export default {
       })
     },
     getCourses () {
+      this.showLoader = true
       this.$axios.get('/courses/').then((success) => {
         const courses = success.data
         const selectedCourse = courses.find((course) => {

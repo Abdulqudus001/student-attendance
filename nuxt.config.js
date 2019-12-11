@@ -55,7 +55,7 @@ module.exports = {
   ],
   // Environment variables
   env: {
-    BASE_URL: process.env.BASE_URL || 'http://192.168.122.1:8000'
+    BASE_URL: process.env.BASE_URL || 'http://0.0.0.0:8000'
   },
   /*
   ** Axios module configuration
@@ -66,7 +66,7 @@ module.exports = {
     proxyHeaders: false,
     credentials: false,
     // baseURL: 'http://localhost:8000/'
-    baseURL: 'http://192.168.122.1:8000'
+    baseURL: 'http://0.0.0.0:8000'
   },
   /*
   ** vuetify module configuration

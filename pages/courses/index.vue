@@ -1,5 +1,6 @@
 <template>
   <v-container grid-list-md>
+    <custom-loader v-show="showLoader" />
     <v-card class="search-options">
       <v-layout wrap align-center justify-center>
         <v-flex sm5>
@@ -141,8 +142,9 @@
 
 <script>
 import CourseModal from '@/components/courseModal.vue'
+import CustomLoader from '~/components/loader.vue'
 export default {
-  components: { CourseModal },
+  components: { CourseModal, CustomLoader },
   data: () => ({
     courseName: '',
     department: '',
@@ -186,7 +188,8 @@ export default {
     dialogAction: 'edit',
     currentCourse: {},
     deleteDialog: false,
-    filteredList: []
+    filteredList: [],
+    showLoader: false
   }),
   computed: {
     disableNameSearchBtn () {
@@ -235,11 +238,14 @@ export default {
       })
       this.filteredList = filteredList
     },
-    async fetchCourses () {
-      const courses = await this.$axios.$get(`${this.prefixUrl}/`)
-      this.$store.dispatch('updateCourses', courses)
-      this.courses = courses
-      this.filteredList = this.courses
+    fetchCourses () {
+      this.showLoader = true
+      this.$axios.$get(`${this.prefixUrl}/`).then((courses) => {
+        this.$store.dispatch('updateCourses', courses)
+        this.courses = courses
+        this.filteredList = this.courses
+        this.showLoader = false
+      })
     },
     hideDialog () {
       this.showDialog = false

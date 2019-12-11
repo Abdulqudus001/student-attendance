@@ -1,5 +1,5 @@
 <template>
-  <div class="loader">
+  <div class="loader" :class="$vuetify.theme.dark ? 'dark' : ''">
     <div class="spinner" />
   </div>
 </template>
@@ -13,11 +13,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.5);
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+  }
+  .dark {
+    background: rgba(0, 0, 0, 0.5);
   }
   .spinner {
     width: 40px;

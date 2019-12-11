@@ -19,7 +19,7 @@
             ref="stream"
             class="stream"
             crossorigin="Anonymous"
-            src="http://192.168.122.1:8000/video"
+            src="http://0.0.0.0:8000/video"
             alt=""
           >
         </v-layout>
@@ -114,7 +114,7 @@ export default {
     },
     addImage () {
       const id = this.$route.params.id
-      this.$axios.post('http://192.168.122.1:8000/video').then((success) => {
+      this.$axios.post('http://0.0.0.0:8000/video').then((success) => {
         console.log(success)
       })
       // Loop through added images
@@ -131,6 +131,7 @@ export default {
             'content-type': 'multipart/form-data'
           } }).then((res) => {
             this.$emit('showLoader', false)
+            this.$emit('imageSent')
           }).catch((err) => {
             this.$emit('showLoader', false)
             this.showAlert = true
